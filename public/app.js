@@ -1,0 +1,22 @@
+let products=[], cart=JSON.parse(localStorage.getItem("mitinan_cart")||"[]");
+const money=n=>new Intl.NumberFormat("fr-DZ").format(n)+" DA";
+async function loadProducts(){ products=await fetch("/api/products").then(r=>r.json()); renderProducts("all"); }
+function renderProducts(filter){ const grid=document.querySelector("#productGrid"); const list=filter==="all"?products:products.filter(p=>p.category===filter); grid.innerHTML=list.map(p=>`
+<article class="product-card">
+  <div class="photo"><img src="${p.image||"/images/IMG-20260706-WA0064.jpg"}" alt="${esc(p.name_fr)}"></div>
+  <div class="body"><h3>${esc(p.name_fr)}</h3><div class="size">${esc(p.size)}</div><p>${esc(p.description_fr)}</p><div class="stock">${p.stock>0?"Disponible":"Rupture de stock"}</div><div class="price">${money(p.price)}</div><button class="btn gold" ${p.stock<1?"disabled":""} onclick="addToCart(${p.id})">Ajouter au panier</button></div>
+</article>`).join("")||"<p>Aucun produit disponible.</p>";}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function addToCart(id){const p=products.find(x=>x.id===id); if(!p)return; const i=cart.find(x=>x.product_id===id); if(i)i.quantity++; else cart.push({product_id:id,quantity:1}); saveCart(); openCart();}
+function saveCart(){localStorage.setItem("mitinan_cart",JSON.stringify(cart));document.querySelector("#cartCount").textContent=cart.reduce((s,i)=>s+i.quantity,0)}
+function openCart(){document.querySelector("#cartModal").classList.add("show");renderCart()}
+function renderCart(){const box=document.querySelector("#cartItems");let total=0;box.innerHTML=cart.map(i=>{const p=products.find(x=>x.id===i.product_id);if(!p)return"";total+=p.price*i.quantity;return `<div class="cart-row"><img src="${p.image}"><div><b>${esc(p.name_fr)}</b><div>${p.size} · ${money(p.price)}</div></div><div><button onclick="changeQty(${p.id},-1)">−</button> ${i.quantity} <button onclick="changeQty(${p.id},1)">+</button></div></div>`}).join("")||"<p>Votre panier est vide.</p>";document.querySelector("#cartTotal").textContent=money(total)}
+function changeQty(id,d){const i=cart.find(x=>x.product_id===id);if(!i)return;i.quantity+=d;if(i.quantity<=0)cart=cart.filter(x=>x.product_id!==id);saveCart();renderCart()}
+document.querySelector("#cartBtn").onclick=openCart;document.querySelector("#closeCart").onclick=()=>document.querySelector("#cartModal").classList.remove("show");document.querySelector("#closeCheckout").onclick=()=>document.querySelector("#checkoutModal").classList.remove("show");
+document.querySelector("#checkoutBtn").onclick=()=>{if(!cart.length)return alert("Votre panier est vide.");document.querySelector("#cartModal").classList.remove("show");document.querySelector("#checkoutModal").classList.add("show")}
+document.querySelector("#checkoutForm").onsubmit=async e=>{e.preventDefault();const body=Object.fromEntries(new FormData(e.target));body.items=cart;const r=await fetch("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)return alert(d.error||"Erreur");alert("Merci ! Votre commande #MIT-"+String(d.order_id).padStart(6,"0")+" a été enregistrée.");cart=[];saveCart();e.target.reset();document.querySelector("#checkoutModal").classList.remove("show")};
+document.querySelectorAll("#shopFilter button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#shopFilter button").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderProducts(b.dataset.filter)});
+document.querySelector("#contactForm").onsubmit=e=>{e.preventDefault();alert("Merci. Votre message a été préparé. Configurez un service email avant la mise en production.");e.target.reset()};
+async function loadArticles(){const a=await fetch("/api/articles").then(r=>r.json());document.querySelector("#articleGrid").innerHTML=a.map(x=>`<article class="article-card"><img src="${x.image||"/images/IMG-20260706-WA0062.jpg"}"><div class="body"><small>MITINAN</small><h3>${esc(x.title_fr)}</h3><p>${esc(x.excerpt_fr)}</p></div></article>`).join("")||"<p>Les articles seront bientôt disponibles.</p>"}
+document.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>alert("La structure multilingue AR | EG | FR est prête. Les contenus traduits pourront être gérés dans l’administration."));
+loadProducts();loadArticles();saveCart();
