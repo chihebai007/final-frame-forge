@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiArticlesRouteImport } from './routes/api/articles'
+import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiOrdersRouteImport } from './routes/api/orders'
 import { Route as ApiProductsRouteImport } from './routes/api/products'
+import { Route as ApiTextsRouteImport } from './routes/api/texts'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
 const ApiArticlesRoute = ApiArticlesRouteImport.update({
   id: '/api/articles',
   path: '/api/articles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiContactRoute = ApiContactRouteImport.update({
+  id: '/api/contact',
+  path: '/api/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiOrdersRoute = ApiOrdersRouteImport.update({
@@ -34,39 +41,71 @@ const ApiProductsRoute = ApiProductsRouteImport.update({
   path: '/api/products',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTextsRoute = ApiTextsRouteImport.update({
+  id: '/api/texts',
+  path: '/api/texts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/articles': typeof ApiArticlesRoute
+  '/api/contact': typeof ApiContactRoute
   '/api/orders': typeof ApiOrdersRoute
   '/api/products': typeof ApiProductsRoute
+  '/api/texts': typeof ApiTextsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/articles': typeof ApiArticlesRoute
+  '/api/contact': typeof ApiContactRoute
   '/api/orders': typeof ApiOrdersRoute
   '/api/products': typeof ApiProductsRoute
+  '/api/texts': typeof ApiTextsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/articles': typeof ApiArticlesRoute
+  '/api/contact': typeof ApiContactRoute
   '/api/orders': typeof ApiOrdersRoute
   '/api/products': typeof ApiProductsRoute
+  '/api/texts': typeof ApiTextsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/articles' | '/api/orders' | '/api/products'
+  fullPaths:
+    | '/'
+    | '/api/articles'
+    | '/api/contact'
+    | '/api/orders'
+    | '/api/products'
+    | '/api/texts'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/articles' | '/api/orders' | '/api/products'
-  id: '__root__' | '/' | '/api/articles' | '/api/orders' | '/api/products'
+  to:
+    | '/'
+    | '/api/articles'
+    | '/api/contact'
+    | '/api/orders'
+    | '/api/products'
+    | '/api/texts'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/articles'
+    | '/api/contact'
+    | '/api/orders'
+    | '/api/products'
+    | '/api/texts'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiArticlesRoute: typeof ApiArticlesRoute
+  ApiContactRoute: typeof ApiContactRoute
   ApiOrdersRoute: typeof ApiOrdersRoute
   ApiProductsRoute: typeof ApiProductsRoute
+  ApiTextsRoute: typeof ApiTextsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,6 +124,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiArticlesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/contact': {
+      id: '/api/contact'
+      path: '/api/contact'
+      fullPath: '/api/contact'
+      preLoaderRoute: typeof ApiContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/orders': {
       id: '/api/orders'
       path: '/api/orders'
@@ -99,14 +145,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/texts': {
+      id: '/api/texts'
+      path: '/api/texts'
+      fullPath: '/api/texts'
+      preLoaderRoute: typeof ApiTextsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiArticlesRoute: ApiArticlesRoute,
+  ApiContactRoute: ApiContactRoute,
   ApiOrdersRoute: ApiOrdersRoute,
   ApiProductsRoute: ApiProductsRoute,
+  ApiTextsRoute: ApiTextsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
