@@ -280,7 +280,7 @@ function Texts() {
       const { error } = await supabase.from("site_texts").update({ value: draft[t.key] }).eq("key", t.key);
       if (error) return toast.error(error.message);
     }
-    setList(list.map((t) => ({ ...t, value: draft[t.key] })));
+    setList(list.map((t) => ({ ...t, value: draft[t.key] ?? t.value })));
     toast.success(changed.length ? `${changed.length} texte(s) enregistré(s)` : "Aucun changement");
   }
   return (
