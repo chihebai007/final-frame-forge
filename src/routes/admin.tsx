@@ -113,6 +113,7 @@ function Login() {
     setBusy(false);
     if (error) return toast.error(error.message);
     if (mode === "up" && !data.session) toast.success("Compte créé. Confirmez votre email puis connectez-vous.");
+    return;
   }
   return (
     <form onSubmit={submit} className="mx-auto max-w-sm space-y-4 rounded-lg border bg-card p-6 shadow-sm">
@@ -163,6 +164,7 @@ function Products() {
     toast.success("Produit enregistré");
     setEdit(null);
     load();
+    return;
   }
   async function toggle(p: Product) {
     await supabase.from("products").update({ active: !p.active }).eq("id", p.id);
@@ -231,6 +233,7 @@ function Articles() {
     toast.success("Article enregistré");
     setEdit(null);
     load();
+    return;
   }
   async function remove(a: Article) {
     if (!confirm(`Supprimer « ${a.title} » ?`)) return;
