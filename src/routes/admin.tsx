@@ -34,7 +34,7 @@ const IMAGES = [
   "/images/IMG-20260706-WA0063.jpg",
   "/images/IMG-20260706-WA0064.jpg",
   "/images/IMG-20260706-WA0065.jpg",
-];
+] as const;
 const money = (n: number) => new Intl.NumberFormat("fr-DZ").format(Number(n)) + " DA";
 const date = (s: string) => new Date(s).toLocaleString("fr-FR");
 
@@ -282,6 +282,7 @@ function Texts() {
     }
     setList(list.map((t) => ({ ...t, value: draft[t.key] ?? t.value })));
     toast.success(changed.length ? `${changed.length} texte(s) enregistré(s)` : "Aucun changement");
+    return;
   }
   return (
     <div className="space-y-4 rounded-lg border bg-card p-6">
