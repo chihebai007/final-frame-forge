@@ -277,7 +277,7 @@ function Texts() {
   async function save() {
     const changed = list.filter((t) => draft[t.key] !== t.value);
     for (const t of changed) {
-      const { error } = await supabase.from("site_texts").update({ value: draft[t.key] }).eq("key", t.key);
+      const { error } = await supabase.from("site_texts").update({ value: draft[t.key] ?? "" }).eq("key", t.key);
       if (error) return toast.error(error.message);
     }
     setList(list.map((t) => ({ ...t, value: draft[t.key] ?? t.value })));
