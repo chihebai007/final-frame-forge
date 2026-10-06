@@ -47,6 +47,39 @@ export type Database = {
         }
         Relationships: []
       }
+      awards: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_url: string
+          published: boolean
+          sort_order: number
+          title: string
+          year: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string
+          published?: boolean
+          sort_order?: number
+          title: string
+          year?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string
+          published?: boolean
+          sort_order?: number
+          title?: string
+          year?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -117,7 +150,9 @@ export type Database = {
         Row: {
           address: string
           commune: string
+          country: string
           created_at: string
+          destination: string
           email: string
           first_name: string
           id: string
@@ -131,7 +166,9 @@ export type Database = {
         Insert: {
           address: string
           commune: string
+          country?: string
           created_at?: string
+          destination?: string
           email?: string
           first_name: string
           id?: string
@@ -145,7 +182,9 @@ export type Database = {
         Update: {
           address?: string
           commune?: string
+          country?: string
           created_at?: string
+          destination?: string
           email?: string
           first_name?: string
           id?: string
@@ -202,6 +241,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          approved: boolean
+          comment: string
+          created_at: string
+          id: string
+          name: string
+          product_id: string
+          rating: number
+        }
+        Insert: {
+          approved?: boolean
+          comment?: string
+          created_at?: string
+          id?: string
+          name: string
+          product_id: string
+          rating: number
+        }
+        Update: {
+          approved?: boolean
+          comment?: string
+          created_at?: string
+          id?: string
+          name?: string
+          product_id?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_texts: {
         Row: {

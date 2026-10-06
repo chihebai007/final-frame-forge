@@ -2,19 +2,29 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { json } from "@/lib/public-db.server";
 
-const schema = z.object({
-  first_name: z.string().trim().min(1).max(100),
-  last_name: z.string().trim().min(1).max(100),
-  phone: z.string().trim().regex(/^[+\d\s().-]{8,20}$/, "Téléphone invalide"),
-  email: z.union([z.literal(""), z.string().trim().email().max(255)]).optional().default(""),
-  wilaya: z.string().trim().min(1).max(100),
-  commune: z.string().trim().min(1).max(100),
-  address: z.string().trim().min(3).max(500),
-  items: z
-    .array(z.object({ product_id: z.string().uuid(), quantity: z.number().int().min(1).max(100) }))
-    .min(1, "Panier vide")
-    .max(50),
-});
+const schema = z
+  .object({
+    destination: z.enum(["algerie", "international"]).default("algerie"),
+    country: z.string().trim().max(100).optional().default(""),
+    first_name: z.string().trim().min(1).max(100),
+    last_name: z.string().trim().min(1).max(100),
+    phone: z.string().trim().regex(/^[+\d\s().-]{8,20}$/, "Téléphone invalide"),
+    email: z.union([z.literal(""), z.string().trim().email().max(255)]).optional().default(""),
+    wilaya: z.string().trim().max(100).optional().default(""),
+    commune: z.string().trim().max(100).optional().default(""),
+    address: z.string().trim().min(3).max(500),
+    website: z.string().optional(),
+    items: z
+      .array(z.object({ product_id: z.string().uuid(), quantity: z.number().int().min(1).max(100) }))
+      .min(1, "Panier vide")
+      .max(50),
+  })
+  .superRefine((v, ctx) => {
+    if (v.destination === "algerie") {
+      if (!v.wilaya) ctx.addIssue({ code: "custom", message: "Choisissez votre wilaya" });
+      if (!v.commune) ctx.addIssue({ code: "custom", message: "Indiquez votre commune" });
+    } else if (!v.country) ctx.addIssue({ code: "custom", message: "Indiquez votre pays" });
+  });
 
 export const Route = createFileRoute("/api/orders")({
   server: {
@@ -28,7 +38,12 @@ export const Route = createFileRoute("/api/orders")({
         }
         const parsed = schema.safeParse(body);
         if (!parsed.success) return json({ error: parsed.error.issues[0]?.message ?? "Données invalides" }, 400);
-        const { items, ...customer } = parsed.data;
+        const { items, website, ...customer } = parsed.data;
+        if (website) return json({ ok: true, order_number: 0 }); // robot (honeypot)
+        if (customer.destination === "international") {
+          customer.wilaya = customer.wilaya || "International";
+          customer.commune = customer.commune || customer.country;
+        }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const ids = [...new Set(items.map((i) => i.product_id))];
