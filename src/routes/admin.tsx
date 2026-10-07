@@ -83,12 +83,16 @@ function AdminPage() {
               <TabsTrigger value="products">Produits</TabsTrigger>
               <TabsTrigger value="articles">Articles</TabsTrigger>
               <TabsTrigger value="texts">Textes du site</TabsTrigger>
+              <TabsTrigger value="awards">Distinctions</TabsTrigger>
+              <TabsTrigger value="reviews">Avis clients</TabsTrigger>
               <TabsTrigger value="orders">Commandes</TabsTrigger>
               <TabsTrigger value="messages">Messages</TabsTrigger>
             </TabsList>
             <TabsContent value="products"><Products /></TabsContent>
             <TabsContent value="articles"><Articles /></TabsContent>
             <TabsContent value="texts"><Texts /></TabsContent>
+            <TabsContent value="awards"><Awards /></TabsContent>
+            <TabsContent value="reviews"><Reviews /></TabsContent>
             <TabsContent value="orders"><Orders /></TabsContent>
             <TabsContent value="messages"><Messages /></TabsContent>
           </Tabs>
@@ -324,7 +328,7 @@ function Orders() {
             </select>
           </div>
           <p className="text-sm">{o.first_name} {o.last_name} · <a className="underline" href={`tel:${o.phone}`}>{o.phone}</a>{o.email && ` · ${o.email}`}</p>
-          <p className="text-sm text-muted-foreground">{o.address}, {o.commune}, {o.wilaya} · {date(o.created_at)}</p>
+          <p className="text-sm text-muted-foreground">{o.destination === "international" ? <b>International (devis) · {o.country} · </b> : null}{o.address}, {o.commune}, {o.wilaya} · {date(o.created_at)}</p>
           <ul className="text-sm">
             {o.order_items.map((i) => <li key={i.id}>{i.quantity} × {i.product_name} ({money(i.unit_price)})</li>)}
           </ul>
@@ -354,6 +358,94 @@ function Messages() {
           </div>
           <p className="text-xs text-muted-foreground">{date(m.created_at)}</p>
           <p className="whitespace-pre-wrap text-sm">{m.message}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+type Award = Tables<"awards">;
+function Awards() {
+  const [list, setList] = useState<Award[]>([]);
+  const [edit, setEdit] = useState<Partial<Award> | null>(null);
+  const load = () => supabase.from("awards").select("*").order("sort_order").then(({ data }) => setList(data ?? []));
+  useEffect(() => { load(); }, []);
+  async function save(e: FormEvent) {
+    e.preventDefault();
+    if (!edit) return;
+    const { id, created_at: _c, ...row } = edit as Award;
+    const payload = { ...row, title: row.title.trim() };
+    const { error } = id ? await supabase.from("awards").update(payload).eq("id", id) : await supabase.from("awards").insert(payload);
+    if (error) return toast.error(error.message);
+    toast.success("Distinction enregistrée");
+    setEdit(null);
+    load();
+    return;
+  }
+  async function remove(a: Award) {
+    if (!confirm(`Supprimer « ${a.title} » ?`)) return;
+    await supabase.from("awards").delete().eq("id", a.id);
+    load();
+  }
+  if (edit) return (
+    <form onSubmit={save} className="space-y-4 rounded-lg border bg-card p-6">
+      <h2 className="text-xl font-semibold">{edit.id ? "Modifier la distinction" : "Nouvelle médaille / trophée"}</h2>
+      <div className="grid gap-4 sm:grid-cols-[1fr_160px]">
+        <div className="space-y-2"><Label>Titre (ex. Médaille d’or — Concours …)</Label><Input required value={edit.title ?? ""} onChange={(e) => setEdit({ ...edit, title: e.target.value })} /></div>
+        <div className="space-y-2"><Label>Année</Label><Input value={edit.year ?? ""} onChange={(e) => setEdit({ ...edit, year: e.target.value })} /></div>
+      </div>
+      <div className="space-y-2"><Label>Description</Label><Textarea value={edit.description ?? ""} onChange={(e) => setEdit({ ...edit, description: e.target.value })} /></div>
+      <ImagePicker value={edit.image_url ?? ""} onChange={(v) => setEdit({ ...edit, image_url: v })} />
+      <div className="flex items-center gap-2"><Switch checked={!!edit.published} onCheckedChange={(v) => setEdit({ ...edit, published: v })} /><Label>Afficher sur le site</Label></div>
+      <div className="flex gap-2"><Button>Enregistrer</Button><Button type="button" variant="outline" onClick={() => setEdit(null)}>Annuler</Button></div>
+    </form>
+  );
+  return (
+    <div className="space-y-4">
+      <Button onClick={() => setEdit({ title: "", year: "", description: "", image_url: "", published: true, sort_order: list.length + 1 })}>+ Ajouter une médaille / un trophée</Button>
+      {!list.length && <p className="text-muted-foreground">Aucune distinction pour le moment.</p>}
+      {list.map((a) => (
+        <div key={a.id} className="flex flex-wrap items-center gap-4 rounded-lg border bg-card p-4">
+          {a.image_url ? <img src={a.image_url} alt="" className="h-16 w-16 rounded object-cover" /> : <div className="grid h-16 w-16 place-items-center text-3xl">🏅</div>}
+          <div className="min-w-48 flex-1"><p className="font-semibold">{a.title}</p><p className="text-sm text-muted-foreground">{a.year}</p></div>
+          <span className="text-xs text-muted-foreground">{a.published ? "Affichée" : "Masquée"}</span>
+          <Button size="sm" variant="outline" onClick={() => setEdit(a)}>Modifier</Button>
+          <Button size="sm" variant="destructive" onClick={() => remove(a)}>Supprimer</Button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+type Review = Tables<"reviews"> & { products: { name: string } | null };
+function Reviews() {
+  const [list, setList] = useState<Review[]>([]);
+  const load = () => supabase.from("reviews").select("*, products(name)").order("created_at", { ascending: false }).then(({ data }) => setList((data as Review[]) ?? []));
+  useEffect(() => { load(); }, []);
+  async function toggle(r: Review) {
+    const { error } = await supabase.from("reviews").update({ approved: !r.approved }).eq("id", r.id);
+    if (error) toast.error(error.message); else load();
+  }
+  async function remove(r: Review) {
+    if (!confirm("Supprimer cet avis ?")) return;
+    await supabase.from("reviews").delete().eq("id", r.id);
+    load();
+  }
+  if (!list.length) return <p className="text-muted-foreground">Aucun avis pour le moment.</p>;
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">Les nouveaux avis n’apparaissent sur le site qu’après votre validation.</p>
+      {list.map((r) => (
+        <div key={r.id} className="space-y-1 rounded-lg border bg-card p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-semibold">{r.name} · <span className="text-yellow-600">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span> · {r.products?.name ?? "Produit supprimé"}</p>
+            <div className="flex gap-2">
+              <Button size="sm" variant={r.approved ? "outline" : "default"} onClick={() => toggle(r)}>{r.approved ? "Masquer" : "Valider"}</Button>
+              <Button size="sm" variant="destructive" onClick={() => remove(r)}>Supprimer</Button>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">{date(r.created_at)} · {r.approved ? "Publié" : "En attente"}</p>
+          <p className="whitespace-pre-wrap text-sm">{r.comment}</p>
         </div>
       ))}
     </div>
