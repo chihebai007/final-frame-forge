@@ -54,7 +54,7 @@ function AdminPage() {
 
   useEffect(() => {
     if (!session) return setIsAdmin(null);
-    supabase.rpc("claim_first_admin").then(({ data, error }) => setIsAdmin(!error && data === true));
+    supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" }).then(({ data, error }) => setIsAdmin(!error && data === true));
   }, [session?.user.id]);
 
   return (
@@ -103,30 +103,34 @@ function AdminPage() {
 }
 
 function Login() {
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const [mode, setMode] = useState<"in" | "forgot">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { data, error } =
-      mode === "in"
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/admin` } });
+    if (mode === "forgot") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
+      setBusy(false);
+      if (error) return toast.error(error.message);
+      toast.success("Si ce compte existe, un email de réinitialisation vient d’être envoyé.");
+      setMode("in");
+      return;
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (error) return toast.error(error.message);
-    if (mode === "up" && !data.session) toast.success("Compte créé. Confirmez votre email puis connectez-vous.");
+    if (error) toast.error("Email ou mot de passe incorrect.");
     return;
   }
   return (
     <form onSubmit={submit} className="mx-auto max-w-sm space-y-4 rounded-lg border bg-card p-6 shadow-sm">
-      <h1 className="text-2xl font-bold">{mode === "in" ? "Connexion" : "Créer le compte administrateur"}</h1>
-      <div className="space-y-2"><Label>Email</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-      <div className="space-y-2"><Label>Mot de passe</Label><Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-      <Button className="w-full" disabled={busy}>{mode === "in" ? "Se connecter" : "Créer le compte"}</Button>
-      <button type="button" className="w-full text-sm text-muted-foreground underline" onClick={() => setMode(mode === "in" ? "up" : "in")}>
-        {mode === "in" ? "Première utilisation ? Créer le compte" : "J’ai déjà un compte"}
+      <h1 className="text-2xl font-bold">{mode === "in" ? "Connexion" : "Mot de passe oublié"}</h1>
+      <div className="space-y-2"><Label>Email</Label><Input type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+      {mode === "in" && <div className="space-y-2"><Label>Mot de passe</Label><Input type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>}
+      <Button className="w-full" disabled={busy}>{mode === "in" ? "Se connecter" : "Recevoir le lien de réinitialisation"}</Button>
+      <button type="button" className="w-full text-sm text-muted-foreground underline" onClick={() => setMode(mode === "in" ? "forgot" : "in")}>
+        {mode === "in" ? "Mot de passe oublié ?" : "Retour à la connexion"}
       </button>
     </form>
   );
@@ -150,7 +154,7 @@ function ImagePicker({ value, onChange }: { value: string; onChange: (v: string)
 }
 
 type Product = Tables<"products">;
-const emptyProduct = { name: "", description: "", price: 0, stock: 0, size: "1 L", category: "extra-vierge", image_url: IMAGES[3], active: true, sort_order: 0 };
+const emptyProduct = { name: "", description: "", name_en: "", name_ar: "", description_en: "", description_ar: "", price: 0, stock: 0, size: "1 L", category: "extra-vierge", image_url: IMAGES[3], active: true, sort_order: 0 };
 
 function Products() {
   const [list, setList] = useState<Product[]>([]);
@@ -185,6 +189,12 @@ function Products() {
       <h2 className="text-xl font-semibold">{edit.id ? "Modifier le produit" : "Nouveau produit"}</h2>
       <div className="space-y-2"><Label>Nom</Label><Input required value={edit.name ?? ""} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></div>
       <div className="space-y-2"><Label>Description</Label><Textarea value={edit.description ?? ""} onChange={(e) => setEdit({ ...edit, description: e.target.value })} /></div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2"><Label>Nom en anglais</Label><Input value={edit.name_en ?? ""} onChange={(e) => setEdit({ ...edit, name_en: e.target.value })} /></div>
+        <div className="space-y-2"><Label>Nom en arabe</Label><Input dir="rtl" value={edit.name_ar ?? ""} onChange={(e) => setEdit({ ...edit, name_ar: e.target.value })} /></div>
+        <div className="space-y-2"><Label>Description en anglais</Label><Textarea value={edit.description_en ?? ""} onChange={(e) => setEdit({ ...edit, description_en: e.target.value })} /></div>
+        <div className="space-y-2"><Label>Description en arabe</Label><Textarea dir="rtl" value={edit.description_ar ?? ""} onChange={(e) => setEdit({ ...edit, description_ar: e.target.value })} /></div>
+      </div>
       <div className="grid gap-4 sm:grid-cols-4">
         <div className="space-y-2"><Label>Prix (DA)</Label><Input type="number" min={0} step="1" required value={edit.price ?? 0} onChange={(e) => setEdit({ ...edit, price: Number(e.target.value) })} /></div>
         <div className="space-y-2"><Label>Stock</Label><Input type="number" min={0} required value={edit.stock ?? 0} onChange={(e) => setEdit({ ...edit, stock: Number(e.target.value) })} /></div>
@@ -310,6 +320,7 @@ type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
 const STATUSES = ["nouvelle", "confirmée", "expédiée", "livrée", "annulée"];
 function Orders() {
   const [list, setList] = useState<Order[]>([]);
+  const [filter, setFilter] = useState("à traiter");
   const load = () => supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }).then(({ data }) => setList((data as Order[]) ?? []));
   useEffect(() => { load(); }, []);
   async function setStatus(id: string, status: string) {
@@ -317,15 +328,30 @@ function Orders() {
     if (error) toast.error(error.message); else load();
   }
   if (!list.length) return <p className="text-muted-foreground">Aucune commande pour le moment.</p>;
+  const shown = list.filter((o) => filter === "toutes" || (filter === "à traiter" ? ["nouvelle", "confirmée"].includes(o.status) : o.status === filter));
   return (
     <div className="space-y-4">
-      {list.map((o) => (
+      <div className="flex flex-wrap gap-2">
+        {["à traiter", "toutes", ...STATUSES].map((f) => (
+          <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)}>
+            {f} ({f === "toutes" ? list.length : f === "à traiter" ? list.filter((o) => ["nouvelle", "confirmée"].includes(o.status)).length : list.filter((o) => o.status === f).length})
+          </Button>
+        ))}
+        <Button size="sm" variant="ghost" onClick={load}>Actualiser</Button>
+      </div>
+      {!shown.length && <p className="text-muted-foreground">Aucune commande dans cette catégorie.</p>}
+      {shown.map((o) => (
         <div key={o.id} className="space-y-2 rounded-lg border bg-card p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-semibold">#MIT-{String(o.order_number).padStart(6, "0")} · {money(o.total)}</p>
+            <div className="flex flex-wrap items-center gap-2">
+            {o.status === "nouvelle" && <Button size="sm" onClick={() => setStatus(o.id, "confirmée")}>Confirmer</Button>}
+            {o.status === "confirmée" && <Button size="sm" onClick={() => setStatus(o.id, "expédiée")}>Marquer comme envoyée</Button>}
+            {o.status === "expédiée" && <Button size="sm" onClick={() => setStatus(o.id, "livrée")}>Marquer comme livrée</Button>}
             <select className="h-9 rounded-md border bg-background px-2" value={o.status} onChange={(e) => setStatus(o.id, e.target.value)}>
               {STATUSES.map((s) => <option key={s}>{s}</option>)}
             </select>
+            </div>
           </div>
           <p className="text-sm">{o.first_name} {o.last_name} · <a className="underline" href={`tel:${o.phone}`}>{o.phone}</a>{o.email && ` · ${o.email}`}</p>
           <p className="text-sm text-muted-foreground">{o.destination === "international" ? <b>International (devis) · {o.country} · </b> : null}{o.address}, {o.commune}, {o.wilaya} · {date(o.created_at)}</p>
