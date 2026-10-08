@@ -203,9 +203,13 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          description_ar: string
+          description_en: string
           id: string
           image_url: string
           name: string
+          name_ar: string
+          name_en: string
           price: number
           size: string
           sort_order: number
@@ -217,9 +221,13 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          description_ar?: string
+          description_en?: string
           id?: string
           image_url?: string
           name: string
+          name_ar?: string
+          name_en?: string
           price?: number
           size?: string
           sort_order?: number
@@ -231,9 +239,13 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          description_ar?: string
+          description_en?: string
           id?: string
           image_url?: string
           name?: string
+          name_ar?: string
+          name_en?: string
           price?: number
           size?: string
           sort_order?: number
@@ -327,7 +339,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      claim_first_admin: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
