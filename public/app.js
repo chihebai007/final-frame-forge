@@ -25,7 +25,7 @@
       shop_eyebrow:"MITINAN SHOP",all:"All",loading:"Loading…",awards_eyebrow:"PRIZES & AWARDS",awards_title:"Our medals and trophies",awards_text:"MITINAN oil quality recognised at competitions and fairs.",
       contact_us:"Contact us →",journal:"MITINAN JOURNAL",sales:"Sales department",consumer:"Customer service",send:"Send",links:"Links",languages:"Languages",admin:"Administration",
       your_cart:"Your cart",total:"Total",checkout:"Checkout",checkout_title:"Order — cash on delivery",summary:"Order summary",dest_dz:"Algeria",dest_int:"International (on quote)",
-      choose_wilaya:"Choose your wilaya",confirm:"Confirm order",pay_note:"Cash on delivery — no online payment required.",pay_note_int:"International: we will contact you with a shipping quote before confirming.",
+      choose_wilaya:"Choose your wilaya",choose_commune:"Choose your town",choose_commune_first:"Choose the wilaya first",other_commune:"Other (type it)",confirm:"Confirm order",pay_note:"Cash on delivery — no online payment required.",pay_note_int:"International: we will contact you with a shipping quote before confirming.",
       leave_review:"Leave a review",send_review:"Post my review",
       ph_name:"Name",ph_message:"Your message",ph_first:"First name",ph_last:"Last name",ph_phone:"Phone",ph_email:"Email (optional)",ph_commune:"Town",ph_country:"Country",ph_address:"Delivery address",ph_comment:"Your opinion on this product",
       hero_eyebrow:"VIRGIN & EXTRA VIRGIN OLIVE OIL",hero_text:"An authentic olive oil, straight from the mountains of Kabylia. Cold extracted, 100% natural.",hero_button:"Discover our products →",
@@ -44,7 +44,7 @@
       shop_eyebrow:"متجر ميتينان",all:"الكل",loading:"جار التحميل…",awards_eyebrow:"الجوائز والتكريمات",awards_title:"ميدالياتنا وكؤوسنا",awards_text:"جودة زيت ميتينان معترف بها في المسابقات والمعارض.",
       contact_us:"اتصل بنا ←",journal:"مجلة ميتينان",sales:"المصلحة التجارية",consumer:"خدمة الزبائن",send:"إرسال",links:"روابط",languages:"اللغات",admin:"الإدارة",
       your_cart:"سلتك",total:"المجموع",checkout:"إتمام الطلب",checkout_title:"الطلب — الدفع عند الاستلام",summary:"ملخص الطلب",dest_dz:"الجزائر",dest_int:"دولي (حسب عرض سعر)",
-      choose_wilaya:"اختر ولايتك",confirm:"تأكيد الطلب",pay_note:"الدفع عند الاستلام — لا يلزم أي دفع عبر الإنترنت.",pay_note_int:"دولي: سنتصل بك بعرض سعر الشحن قبل التأكيد.",
+      choose_wilaya:"اختر ولايتك",choose_commune:"اختر بلديتك",choose_commune_first:"اختر الولاية أولاً",other_commune:"أخرى (اكتبها)",confirm:"تأكيد الطلب",pay_note:"الدفع عند الاستلام — لا يلزم أي دفع عبر الإنترنت.",pay_note_int:"دولي: سنتصل بك بعرض سعر الشحن قبل التأكيد.",
       leave_review:"شارك رأيك",send_review:"نشر رأيي",
       ph_name:"الاسم",ph_message:"رسالتك",ph_first:"الاسم",ph_last:"اللقب",ph_phone:"الهاتف",ph_email:"البريد الإلكتروني (اختياري)",ph_commune:"البلدية",ph_country:"البلد",ph_address:"عنوان التوصيل",ph_comment:"رأيك في هذا المنتج",
       hero_eyebrow:"زيت زيتون بكر وبكر ممتاز",hero_text:"زيت زيتون أصيل، مباشرة من جبال القبائل. معصور على البارد، طبيعي 100%.",hero_button:"اكتشف منتجاتنا ←",
@@ -58,6 +58,7 @@
     fr: {
       add:"Ajouter au panier",buy:"Commander maintenant",in_stock:"Disponible",out:"Rupture de stock",reviews:"avis",no_review:"Pas encore d’avis",see_reviews:"Avis",empty_cart:"Votre panier est vide.",no_products:"Aucun produit disponible.",no_awards:"Nos distinctions seront bientôt affichées ici.",no_articles:"Les articles seront bientôt disponibles.",
       max_stock:"Stock maximum atteint pour ce produit.",thanks_order:"Merci ! Votre commande #{n} a été enregistrée. Nous vous appellerons pour confirmer la livraison.",thanks_int:"Merci ! Votre demande #{n} a été enregistrée. Nous vous contacterons avec un devis.",thanks_msg:"Merci ! Votre message a bien été envoyé.",thanks_review:"Merci ! Votre avis apparaîtra après validation.",err:"Une erreur est survenue, merci de réessayer.",net:"Connexion impossible, merci de réessayer.",
+      choose_commune:"Choisissez votre commune",choose_commune_first:"Choisissez d’abord la wilaya",other_commune:"Autre (à saisir)",ph_commune:"Commune",
       pay_note_int:"International : nous vous contacterons avec un devis de livraison avant confirmation.",
     },
   };
@@ -101,6 +102,7 @@
     renderProducts();
     renderAwards();
     renderArticles();
+    if ($("#wilaya").value) fillCommunes();
     if ($("#cartModal").classList.contains("show")) renderCart();
   }
 
@@ -124,6 +126,8 @@
     saveCart();
     renderProducts();
   }
+  const pName = (p) => (lang !== "fr" && p["name_" + lang]) || p.name;
+  const pDesc = (p) => (lang !== "fr" && p["description_" + lang]) || p.description;
   const productReviews = (id) => reviews.filter((r) => r.product_id === id);
 
   function renderProducts() {
@@ -134,10 +138,10 @@
       const rv = productReviews(p.id);
       const avg = rv.length ? rv.reduce((s, r) => s + r.rating, 0) / rv.length : 0;
       return `<article class="product-card">
-  <div class="photo"><img src="${esc(safeUrl(p.image_url))}" alt="${esc(p.name)}" loading="lazy"></div>
-  <div class="body"><h3>${esc(p.name)}</h3><div class="size">${esc(p.size)}</div>
+  <div class="photo"><img src="${esc(safeUrl(p.image_url))}" alt="${esc(pName(p))}" loading="lazy"></div>
+  <div class="body"><h3>${esc(pName(p))}</h3><div class="size">${esc(p.size)}</div>
   <button type="button" class="rating" data-reviews="${esc(p.id)}">${rv.length ? `<span class="stars">${stars(avg)}</span> ${avg.toFixed(1)} · ${rv.length} ${esc(tr("reviews"))}` : `<span class="stars dim">☆☆☆☆☆</span> ${esc(tr("no_review"))}`}</button>
-  <p>${esc(p.description)}</p><div class="stock">${esc(p.stock > 0 ? tr("in_stock") : tr("out"))}</div><div class="price">${money(p.price)}</div>
+  <p>${esc(pDesc(p))}</p><div class="stock">${esc(p.stock > 0 ? tr("in_stock") : tr("out"))}</div><div class="price">${money(p.price)}</div>
   <div class="card-actions"><button type="button" class="btn gold" data-buy="${esc(p.id)}" ${p.stock < 1 ? "disabled" : ""}>${esc(tr("buy"))}</button><button type="button" class="btn outline" data-add="${esc(p.id)}" ${p.stock < 1 ? "disabled" : ""}>${esc(tr("add"))}</button></div></div>
 </article>`;
     }).join("") || "<p>" + esc(tr("no_products")) + "</p>";
@@ -191,7 +195,7 @@
   }
   function renderCart() {
     const { lines, total } = cartLines();
-    $("#cartItems").innerHTML = lines.map(({ p, q }) => `<div class="cart-row"><img src="${esc(safeUrl(p.image_url))}" alt=""><div><b>${esc(p.name)}</b><div>${esc(p.size)} · ${money(p.price)}</div></div><div class="qty"><button type="button" data-qty="-1" data-id="${esc(p.id)}" aria-label="-">−</button> ${q} <button type="button" data-qty="1" data-id="${esc(p.id)}" aria-label="+">+</button></div></div>`).join("") || "<p>" + esc(tr("empty_cart")) + "</p>";
+    $("#cartItems").innerHTML = lines.map(({ p, q }) => `<div class="cart-row"><img src="${esc(safeUrl(p.image_url))}" alt=""><div><b>${esc(pName(p))}</b><div>${esc(p.size)} · ${money(p.price)}</div></div><div class="qty"><button type="button" data-qty="-1" data-id="${esc(p.id)}" aria-label="-">−</button> ${q} <button type="button" data-qty="1" data-id="${esc(p.id)}" aria-label="+">+</button></div></div>`).join("") || "<p>" + esc(tr("empty_cart")) + "</p>";
     $("#cartTotal").textContent = money(total);
   }
   function changeQty(id, d) {
@@ -207,7 +211,7 @@
   function openCheckout() {
     if (!cart.length) return alert(tr("empty_cart"));
     const { lines, total } = cartLines();
-    $("#summaryItems").innerHTML = lines.map(({ p, q }) => `<div class="sum-row"><span>${q} × ${esc(p.name)} <small>${esc(p.size)}</small></span><b>${money(p.price * q)}</b></div>`).join("");
+    $("#summaryItems").innerHTML = lines.map(({ p, q }) => `<div class="sum-row"><span>${q} × ${esc(pName(p))} <small>${esc(p.size)}</small></span><b>${money(p.price * q)}</b></div>`).join("");
     $("#summaryTotal").textContent = money(total);
     showModal("#checkoutModal");
   }
@@ -225,7 +229,7 @@
   function openReviews(id) {
     reviewProduct = products.find((p) => p.id === id);
     if (!reviewProduct) return;
-    $("#reviewTitle").textContent = tr("see_reviews") + " — " + reviewProduct.name;
+    $("#reviewTitle").textContent = tr("see_reviews") + " — " + pName(reviewProduct);
     const rv = productReviews(id);
     $("#reviewList").innerHTML = rv.map((r) => `<div class="review"><div><b>${esc(r.name)}</b> <span class="stars">${stars(r.rating)}</span></div><p>${esc(r.comment)}</p><small>${new Date(r.created_at).toLocaleDateString(lang === "ar" ? "ar-DZ" : lang === "en" ? "en-GB" : "fr-FR")}</small></div>`).join("") || `<p class="empty">${esc(tr("no_review"))}</p>`;
     reviewRating = 5;
@@ -255,6 +259,23 @@
   $("#cartBtn").onclick = openCart;
   $("#checkoutBtn").onclick = openCheckout;
   $("#checkoutForm").addEventListener("change", (e) => { if (e.target.name === "destination") updatePayNote(); });
+  let COMMUNES = null;
+  const OTHER = "__autre";
+  async function fillCommunes() {
+    const sel = $("#commune"), w = $("#wilaya").value;
+    const code = w.slice(0, 2);
+    $("#communeOther")?.remove();
+    if (!w) { sel.disabled = true; sel.innerHTML = `<option value="">${esc(tr("choose_commune_first"))}</option>`; return; }
+    if (!COMMUNES) { try { COMMUNES = await getJSON("/communes.json"); } catch { COMMUNES = {}; } }
+    const list = COMMUNES[code] || [];
+    sel.disabled = false;
+    sel.innerHTML = `<option value="">${esc(tr("choose_commune"))}</option>` + list.map(([fr, ar]) => `<option value="${esc(fr)}">${esc(lang === "ar" ? ar : fr)}</option>`).join("") + `<option value="${OTHER}">${esc(tr("other_commune"))}</option>`;
+  }
+  $("#wilaya").addEventListener("change", fillCommunes);
+  $("#commune").addEventListener("change", (e) => {
+    $("#communeOther")?.remove();
+    if (e.target.value === OTHER) e.target.insertAdjacentHTML("afterend", `<input id="communeOther" name="commune_other" required maxlength="100" placeholder="${esc(tr("ph_commune"))}">`);
+  });
   $("#wilaya").insertAdjacentHTML("beforeend", WILAYAS.map((w, i) => `<option value="${esc(String(i + 1).padStart(2, "0") + " - " + w)}">${String(i + 1).padStart(2, "0")} - ${esc(w)}</option>`).join(""));
 
   async function post(url, body) {
@@ -276,9 +297,12 @@
   }
   handleForm($("#checkoutForm"), async (body) => {
     body.items = cart;
+    if (body.commune === OTHER) body.commune = body.commune_other || "";
+    delete body.commune_other;
+    if (body.destination === "international") { body.wilaya = ""; body.commune = ""; }
     const d = await post("/api/orders", body);
     alert(tr(body.destination === "international" ? "thanks_int" : "thanks_order").replace("{n}", orderNo(d.order_number)));
-    cart = []; saveCart(); $("#checkoutForm").reset(); updatePayNote();
+    cart = []; saveCart(); $("#checkoutForm").reset(); fillCommunes(); updatePayNote();
     $("#checkoutModal").classList.remove("show");
     loadProducts();
   });
