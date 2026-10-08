@@ -88,7 +88,7 @@
   <div class="two"><input name="first_name" data-ph="ph_first" placeholder="Prénom" required maxlength="100"><input name="last_name" data-ph="ph_last" placeholder="Nom" required maxlength="100"></div>
   <input name="phone" type="tel" data-ph="ph_phone" placeholder="Téléphone" required pattern="[+0-9 ().\-]{8,20}">
   <input name="email" type="email" data-ph="ph_email" placeholder="Email (facultatif)" maxlength="255">
-  <div class="dz-only two"><select name="wilaya" id="wilaya" required><option value="" data-i="choose_wilaya">Choisissez votre wilaya</option></select><input name="commune" data-ph="ph_commune" placeholder="Commune" required maxlength="100"></div>
+  <div class="dz-only two"><select name="wilaya" id="wilaya" required><option value="" data-i="choose_wilaya">Choisissez votre wilaya</option></select><select name="commune" id="commune" required disabled><option value="" data-i="choose_commune">Choisissez d’abord la wilaya</option></select></div>
   <input class="int-only" name="country" data-ph="ph_country" placeholder="Pays" maxlength="100">
   <textarea name="address" data-ph="ph_address" placeholder="Adresse de livraison" required maxlength="500"></textarea>
   <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
