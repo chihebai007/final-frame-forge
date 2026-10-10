@@ -78,7 +78,7 @@ function AdminPage() {
         ) : !isAdmin ? (
           <p className="rounded-md border bg-card p-6">Ce compte n’a pas accès à l’administration.</p>
         ) : (
-          <Tabs defaultValue="products">
+          <Tabs defaultValue="stats">
             <TabsList className="mb-6 flex-wrap h-auto">
               <TabsTrigger value="stats">Statistiques</TabsTrigger>
               <TabsTrigger value="products">Produits</TabsTrigger>
@@ -525,6 +525,95 @@ function Reviews() {
           <p className="whitespace-pre-wrap text-sm">{r.comment}</p>
         </div>
       ))}
+    </div>
+  );
+}
+
+function Stats() {
+  type O = { id: string; total: number; status: string; wilaya: string; destination: string; created_at: string; order_items: { product_name: string; quantity: number; unit_price: number }[] };
+  const [orders, setOrders] = useState<O[] | null>(null);
+  const [products, setProducts] = useState<Tables<"products">[]>([]);
+  const [reviews, setReviews] = useState<Tables<"reviews">[]>([]);
+  const [messages, setMessages] = useState(0);
+  useEffect(() => {
+    supabase.from("orders").select("id,total,status,wilaya,destination,created_at,order_items(product_name,quantity,unit_price)").then(({ data }) => setOrders((data as O[]) ?? []));
+    supabase.from("products").select("*").then(({ data }) => setProducts(data ?? []));
+    supabase.from("reviews").select("*").then(({ data }) => setReviews(data ?? []));
+    supabase.from("contact_messages").select("id", { count: "exact", head: true }).then(({ count }) => setMessages(count ?? 0));
+  }, []);
+  if (!orders) return <p className="text-muted-foreground">Chargement…</p>;
+
+  const valid = orders.filter((o) => o.status !== "annulée");
+  const revenue = valid.reduce((s, o) => s + Number(o.total), 0);
+  const delivered = orders.filter((o) => o.status === "livrée").reduce((s, o) => s + Number(o.total), 0);
+  const since = (d: number) => valid.filter((o) => Date.now() - new Date(o.created_at).getTime() < d * 864e5);
+  const m30 = since(30);
+  const byStatus = ["nouvelle", "confirmée", "expédiée", "livrée", "annulée"].map((s) => [s, orders.filter((o) => o.status === s).length] as const);
+  const count = (keyOf: (o: O) => [string, number][]) => {
+    const m = new Map<string, number>();
+    valid.forEach((o) => keyOf(o).forEach(([k, n]) => m.set(k, (m.get(k) ?? 0) + n)));
+    return [...m].sort((a, b) => b[1] - a[1]).slice(0, 8);
+  };
+  const topProducts = count((o) => o.order_items.map((i) => [i.product_name, i.quantity]));
+  const topWilayas = count((o) => [[o.destination === "international" ? "International" : o.wilaya, 1]]);
+  const approved = reviews.filter((r) => r.approved);
+  const avg = approved.length ? approved.reduce((s, r) => s + r.rating, 0) / approved.length : 0;
+  const lowStock = products.filter((p) => p.active && p.stock <= 5);
+
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 13 + i);
+    const n = valid.filter((o) => new Date(o.created_at).toDateString() === d.toDateString());
+    return { label: d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }), n: n.length, total: n.reduce((s, o) => s + Number(o.total), 0) };
+  });
+  const maxDay = Math.max(1, ...days.map((d) => d.total));
+
+  const Card = ({ t, v, s }: { t: string; v: string | number; s?: string }) => (
+    <div className="rounded-lg border bg-card p-4"><p className="text-sm text-muted-foreground">{t}</p><p className="mt-1 text-2xl font-bold">{v}</p>{s && <p className="text-xs text-muted-foreground">{s}</p>}</div>
+  );
+  const List = ({ title, rows, empty }: { title: string; rows: readonly (readonly [string, number])[]; empty: string }) => {
+    const max = Math.max(1, ...rows.map((r) => r[1]));
+    return (
+      <div className="rounded-lg border bg-card p-4"><h3 className="mb-3 font-semibold">{title}</h3>
+        {rows.length ? rows.map(([k, n]) => (
+          <div key={k} className="mb-2"><div className="flex justify-between text-sm"><span>{k}</span><span className="font-medium">{n}</span></div>
+            <div className="h-2 rounded bg-muted"><div className="h-2 rounded bg-primary" style={{ width: `${(n / max) * 100}%` }} /></div></div>
+        )) : <p className="text-sm text-muted-foreground">{empty}</p>}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card t="Chiffre d’affaires (hors annulées)" v={money(revenue)} s={`dont livré : ${money(delivered)}`} />
+        <Card t="Commandes" v={orders.length} s={`${m30.length} sur les 30 derniers jours`} />
+        <Card t="Panier moyen" v={money(valid.length ? Math.round(revenue / valid.length) : 0)} />
+        <Card t="À traiter" v={orders.filter((o) => o.status === "nouvelle" || o.status === "confirmée").length} s="nouvelles + confirmées" />
+        <Card t="Produits en vente" v={`${products.filter((p) => p.active).length} / ${products.length}`} />
+        <Card t="Note moyenne des avis" v={approved.length ? `${avg.toFixed(1)} / 5` : "—"} s={`${approved.length} publiés · ${reviews.length - approved.length} en attente`} />
+        <Card t="Messages reçus" v={messages} />
+        <Card t="CA 30 derniers jours" v={money(m30.reduce((s, o) => s + Number(o.total), 0))} />
+      </div>
+      <div className="rounded-lg border bg-card p-4">
+        <h3 className="mb-3 font-semibold">Ventes des 14 derniers jours</h3>
+        <div className="flex h-40 items-end gap-1">
+          {days.map((d) => (
+            <div key={d.label} className="flex flex-1 flex-col items-center gap-1" title={`${d.n} commande(s) · ${money(d.total)}`}>
+              <div className="w-full rounded-t bg-primary" style={{ height: `${(d.total / maxDay) * 120}px`, minHeight: d.total ? 4 : 1 }} />
+              <span className="text-[10px] text-muted-foreground">{d.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        <List title="Produits les plus vendus (quantité)" rows={topProducts} empty="Aucune vente" />
+        <List title="Wilayas les plus actives" rows={topWilayas} empty="Aucune commande" />
+        <List title="Commandes par statut" rows={byStatus} empty="—" />
+      </div>
+      {lowStock.length > 0 && (
+        <div className="rounded-lg border border-destructive bg-card p-4"><h3 className="mb-2 font-semibold text-destructive">Stock faible (≤ 5)</h3>
+          {lowStock.map((p) => <p key={p.id} className="text-sm">{p.name} : {p.stock} restant(s)</p>)}</div>
+      )}
     </div>
   );
 }
