@@ -155,9 +155,9 @@ async function fileToDataUrl(file: File): Promise<string> {
 
 function ImagePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const custom = value && !(IMAGES as readonly string[]).includes(value) ? value : "";
-  async function upload(f?: File) {
+  async function upload(f?: File): Promise<void> {
     if (!f) return;
-    if (!f.type.startsWith("image/")) return toast.error("Choisissez un fichier image");
+    if (!f.type.startsWith("image/")) { toast.error("Choisissez un fichier image"); return; }
     try { onChange(await fileToDataUrl(f)); toast.success("Image ajoutée"); }
     catch { toast.error("Impossible de lire cette image"); }
   }
