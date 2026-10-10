@@ -80,6 +80,7 @@ function AdminPage() {
         ) : (
           <Tabs defaultValue="products">
             <TabsList className="mb-6 flex-wrap h-auto">
+              <TabsTrigger value="stats">Statistiques</TabsTrigger>
               <TabsTrigger value="products">Produits</TabsTrigger>
               <TabsTrigger value="articles">Articles</TabsTrigger>
               <TabsTrigger value="texts">Textes du site</TabsTrigger>
@@ -88,6 +89,7 @@ function AdminPage() {
               <TabsTrigger value="orders">Commandes</TabsTrigger>
               <TabsTrigger value="messages">Messages</TabsTrigger>
             </TabsList>
+            <TabsContent value="stats"><Stats /></TabsContent>
             <TabsContent value="products"><Products /></TabsContent>
             <TabsContent value="articles"><Articles /></TabsContent>
             <TabsContent value="texts"><Texts /></TabsContent>
@@ -136,19 +138,72 @@ function Login() {
   );
 }
 
+async function fileToDataUrl(file: File): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((res, rej) => {
+      const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url;
+    });
+    const max = 1000;
+    const scale = Math.min(1, max / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.8);
+  } finally { URL.revokeObjectURL(url); }
+}
+
 function ImagePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const custom = value && !(IMAGES as readonly string[]).includes(value) ? value : "";
+  async function upload(f?: File) {
+    if (!f) return;
+    if (!f.type.startsWith("image/")) return toast.error("Choisissez un fichier image");
+    try { onChange(await fileToDataUrl(f)); toast.success("Image ajoutée"); }
+    catch { toast.error("Impossible de lire cette image"); }
+  }
+  const Thumb = ({ src }: { src: string }) => (
+    <div className="relative h-16 w-16">
+      <button type="button" onClick={() => onChange(src)}
+        className={`h-full w-full overflow-hidden rounded border-2 ${value === src ? "border-primary" : "border-transparent"}`}>
+        <img src={src} alt="" className="h-full w-full object-cover" />
+      </button>
+      {value === src && (
+        <button type="button" aria-label="Retirer l’image" onClick={() => onChange("")}
+          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground shadow">×</button>
+      )}
+    </div>
+  );
   return (
     <div className="space-y-2">
       <Label>Image</Label>
-      <div className="flex flex-wrap gap-2">
-        {IMAGES.map((src) => (
-          <button type="button" key={src} onClick={() => onChange(src)}
-            className={`h-16 w-16 overflow-hidden rounded border-2 ${value === src ? "border-primary" : "border-transparent"}`}>
-            <img src={src} alt="" className="h-full w-full object-cover" />
-          </button>
-        ))}
+      <div className="flex flex-wrap gap-3 pt-2">
+        {custom && <Thumb src={custom} />}
+        {IMAGES.map((src) => <Thumb key={src} src={src} />)}
       </div>
-      <Input placeholder="ou collez un lien d’image (https://…)" value={value} onChange={(e) => onChange(e.target.value)} />
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="inline-flex h-9 cursor-pointer items-center rounded-md border bg-background px-3 text-sm hover:bg-accent">
+          📷 Ajouter une image depuis mon appareil
+          <input type="file" accept="image/*" className="hidden" onChange={(e) => { upload(e.target.files?.[0]); e.target.value = ""; }} />
+        </label>
+        {!value && <span className="text-sm text-muted-foreground">Aucune image sélectionnée</span>}
+      </div>
+      <Input placeholder="ou collez un lien d’image (https://…)" value={value.startsWith("data:") ? "" : value} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+const CATEGORIES = [{ v: "extra-vierge", l: "Extra Vierge" }, { v: "vierge", l: "Vierge" }];
+function CategoryField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const known = CATEGORIES.some((c) => c.v === value);
+  const [other, setOther] = useState(!known);
+  return (
+    <div className="space-y-2"><Label>Catégorie</Label>
+      <select className="h-9 w-full rounded-md border bg-background px-2" value={other ? "__autre" : value}
+        onChange={(e) => { if (e.target.value === "__autre") { setOther(true); onChange(""); } else { setOther(false); onChange(e.target.value); } }}>
+        {CATEGORIES.map((c) => <option key={c.v} value={c.v}>{c.l}</option>)}
+        <option value="__autre">Autre…</option>
+      </select>
+      {other && <Input required placeholder="Nom de la catégorie" value={value} onChange={(e) => onChange(e.target.value)} />}
     </div>
   );
 }
@@ -199,11 +254,7 @@ function Products() {
         <div className="space-y-2"><Label>Prix (DA)</Label><Input type="number" min={0} step="1" required value={edit.price ?? 0} onChange={(e) => setEdit({ ...edit, price: Number(e.target.value) })} /></div>
         <div className="space-y-2"><Label>Stock</Label><Input type="number" min={0} required value={edit.stock ?? 0} onChange={(e) => setEdit({ ...edit, stock: Number(e.target.value) })} /></div>
         <div className="space-y-2"><Label>Contenance</Label><Input value={edit.size ?? ""} onChange={(e) => setEdit({ ...edit, size: e.target.value })} /></div>
-        <div className="space-y-2"><Label>Catégorie</Label>
-          <select className="h-9 w-full rounded-md border bg-background px-2" value={edit.category} onChange={(e) => setEdit({ ...edit, category: e.target.value })}>
-            <option value="extra-vierge">Extra Vierge</option><option value="vierge">Vierge</option>
-          </select>
-        </div>
+        <CategoryField value={edit.category ?? ""} onChange={(v) => setEdit({ ...edit, category: v })} />
       </div>
       <ImagePicker value={edit.image_url ?? ""} onChange={(v) => setEdit({ ...edit, image_url: v })} />
       <div className="flex items-center gap-2"><Switch checked={!!edit.active} onCheckedChange={(v) => setEdit({ ...edit, active: v })} /><Label>En vente sur le site</Label></div>
