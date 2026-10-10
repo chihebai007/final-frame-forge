@@ -78,8 +78,9 @@ function AdminPage() {
         ) : !isAdmin ? (
           <p className="rounded-md border bg-card p-6">Ce compte n’a pas accès à l’administration.</p>
         ) : (
-          <Tabs defaultValue="products">
+          <Tabs defaultValue="stats">
             <TabsList className="mb-6 flex-wrap h-auto">
+              <TabsTrigger value="stats">Statistiques</TabsTrigger>
               <TabsTrigger value="products">Produits</TabsTrigger>
               <TabsTrigger value="articles">Articles</TabsTrigger>
               <TabsTrigger value="texts">Textes du site</TabsTrigger>
@@ -88,6 +89,7 @@ function AdminPage() {
               <TabsTrigger value="orders">Commandes</TabsTrigger>
               <TabsTrigger value="messages">Messages</TabsTrigger>
             </TabsList>
+            <TabsContent value="stats"><Stats /></TabsContent>
             <TabsContent value="products"><Products /></TabsContent>
             <TabsContent value="articles"><Articles /></TabsContent>
             <TabsContent value="texts"><Texts /></TabsContent>
@@ -136,19 +138,72 @@ function Login() {
   );
 }
 
+async function fileToDataUrl(file: File): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((res, rej) => {
+      const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url;
+    });
+    const max = 1000;
+    const scale = Math.min(1, max / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.8);
+  } finally { URL.revokeObjectURL(url); }
+}
+
 function ImagePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const custom = value && !(IMAGES as readonly string[]).includes(value) ? value : "";
+  async function upload(f?: File): Promise<void> {
+    if (!f) return;
+    if (!f.type.startsWith("image/")) { toast.error("Choisissez un fichier image"); return; }
+    try { onChange(await fileToDataUrl(f)); toast.success("Image ajoutée"); }
+    catch { toast.error("Impossible de lire cette image"); }
+  }
+  const Thumb = ({ src }: { src: string }) => (
+    <div className="relative h-16 w-16">
+      <button type="button" onClick={() => onChange(src)}
+        className={`h-full w-full overflow-hidden rounded border-2 ${value === src ? "border-primary" : "border-transparent"}`}>
+        <img src={src} alt="" className="h-full w-full object-cover" />
+      </button>
+      {value === src && (
+        <button type="button" aria-label="Retirer l’image" onClick={() => onChange("")}
+          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground shadow">×</button>
+      )}
+    </div>
+  );
   return (
     <div className="space-y-2">
       <Label>Image</Label>
-      <div className="flex flex-wrap gap-2">
-        {IMAGES.map((src) => (
-          <button type="button" key={src} onClick={() => onChange(src)}
-            className={`h-16 w-16 overflow-hidden rounded border-2 ${value === src ? "border-primary" : "border-transparent"}`}>
-            <img src={src} alt="" className="h-full w-full object-cover" />
-          </button>
-        ))}
+      <div className="flex flex-wrap gap-3 pt-2">
+        {custom && <Thumb src={custom} />}
+        {IMAGES.map((src) => <Thumb key={src} src={src} />)}
       </div>
-      <Input placeholder="ou collez un lien d’image (https://…)" value={value} onChange={(e) => onChange(e.target.value)} />
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="inline-flex h-9 cursor-pointer items-center rounded-md border bg-background px-3 text-sm hover:bg-accent">
+          📷 Ajouter une image depuis mon appareil
+          <input type="file" accept="image/*" className="hidden" onChange={(e) => { upload(e.target.files?.[0]); e.target.value = ""; }} />
+        </label>
+        {!value && <span className="text-sm text-muted-foreground">Aucune image sélectionnée</span>}
+      </div>
+      <Input placeholder="ou collez un lien d’image (https://…)" value={value.startsWith("data:") ? "" : value} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+const CATEGORIES = [{ v: "extra-vierge", l: "Extra Vierge" }, { v: "vierge", l: "Vierge" }];
+function CategoryField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const known = CATEGORIES.some((c) => c.v === value);
+  const [other, setOther] = useState(!known);
+  return (
+    <div className="space-y-2"><Label>Catégorie</Label>
+      <select className="h-9 w-full rounded-md border bg-background px-2" value={other ? "__autre" : value}
+        onChange={(e) => { if (e.target.value === "__autre") { setOther(true); onChange(""); } else { setOther(false); onChange(e.target.value); } }}>
+        {CATEGORIES.map((c) => <option key={c.v} value={c.v}>{c.l}</option>)}
+        <option value="__autre">Autre…</option>
+      </select>
+      {other && <Input required placeholder="Nom de la catégorie" value={value} onChange={(e) => onChange(e.target.value)} />}
     </div>
   );
 }
@@ -199,11 +254,7 @@ function Products() {
         <div className="space-y-2"><Label>Prix (DA)</Label><Input type="number" min={0} step="1" required value={edit.price ?? 0} onChange={(e) => setEdit({ ...edit, price: Number(e.target.value) })} /></div>
         <div className="space-y-2"><Label>Stock</Label><Input type="number" min={0} required value={edit.stock ?? 0} onChange={(e) => setEdit({ ...edit, stock: Number(e.target.value) })} /></div>
         <div className="space-y-2"><Label>Contenance</Label><Input value={edit.size ?? ""} onChange={(e) => setEdit({ ...edit, size: e.target.value })} /></div>
-        <div className="space-y-2"><Label>Catégorie</Label>
-          <select className="h-9 w-full rounded-md border bg-background px-2" value={edit.category} onChange={(e) => setEdit({ ...edit, category: e.target.value })}>
-            <option value="extra-vierge">Extra Vierge</option><option value="vierge">Vierge</option>
-          </select>
-        </div>
+        <CategoryField value={edit.category ?? ""} onChange={(v) => setEdit({ ...edit, category: v })} />
       </div>
       <ImagePicker value={edit.image_url ?? ""} onChange={(v) => setEdit({ ...edit, image_url: v })} />
       <div className="flex items-center gap-2"><Switch checked={!!edit.active} onCheckedChange={(v) => setEdit({ ...edit, active: v })} /><Label>En vente sur le site</Label></div>
@@ -474,6 +525,95 @@ function Reviews() {
           <p className="whitespace-pre-wrap text-sm">{r.comment}</p>
         </div>
       ))}
+    </div>
+  );
+}
+
+function Stats() {
+  type O = { id: string; total: number; status: string; wilaya: string; destination: string; created_at: string; order_items: { product_name: string; quantity: number; unit_price: number }[] };
+  const [orders, setOrders] = useState<O[] | null>(null);
+  const [products, setProducts] = useState<Tables<"products">[]>([]);
+  const [reviews, setReviews] = useState<Tables<"reviews">[]>([]);
+  const [messages, setMessages] = useState(0);
+  useEffect(() => {
+    supabase.from("orders").select("id,total,status,wilaya,destination,created_at,order_items(product_name,quantity,unit_price)").then(({ data }) => setOrders((data as O[]) ?? []));
+    supabase.from("products").select("*").then(({ data }) => setProducts(data ?? []));
+    supabase.from("reviews").select("*").then(({ data }) => setReviews(data ?? []));
+    supabase.from("contact_messages").select("id", { count: "exact", head: true }).then(({ count }) => setMessages(count ?? 0));
+  }, []);
+  if (!orders) return <p className="text-muted-foreground">Chargement…</p>;
+
+  const valid = orders.filter((o) => o.status !== "annulée");
+  const revenue = valid.reduce((s, o) => s + Number(o.total), 0);
+  const delivered = orders.filter((o) => o.status === "livrée").reduce((s, o) => s + Number(o.total), 0);
+  const since = (d: number) => valid.filter((o) => Date.now() - new Date(o.created_at).getTime() < d * 864e5);
+  const m30 = since(30);
+  const byStatus = ["nouvelle", "confirmée", "expédiée", "livrée", "annulée"].map((s) => [s, orders.filter((o) => o.status === s).length] as const);
+  const count = (keyOf: (o: O) => [string, number][]) => {
+    const m = new Map<string, number>();
+    valid.forEach((o) => keyOf(o).forEach(([k, n]) => m.set(k, (m.get(k) ?? 0) + n)));
+    return [...m].sort((a, b) => b[1] - a[1]).slice(0, 8);
+  };
+  const topProducts = count((o) => o.order_items.map((i) => [i.product_name, i.quantity]));
+  const topWilayas = count((o) => [[o.destination === "international" ? "International" : o.wilaya, 1]]);
+  const approved = reviews.filter((r) => r.approved);
+  const avg = approved.length ? approved.reduce((s, r) => s + r.rating, 0) / approved.length : 0;
+  const lowStock = products.filter((p) => p.active && p.stock <= 5);
+
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 13 + i);
+    const n = valid.filter((o) => new Date(o.created_at).toDateString() === d.toDateString());
+    return { label: d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }), n: n.length, total: n.reduce((s, o) => s + Number(o.total), 0) };
+  });
+  const maxDay = Math.max(1, ...days.map((d) => d.total));
+
+  const Card = ({ t, v, s }: { t: string; v: string | number; s?: string }) => (
+    <div className="rounded-lg border bg-card p-4"><p className="text-sm text-muted-foreground">{t}</p><p className="mt-1 text-2xl font-bold">{v}</p>{s && <p className="text-xs text-muted-foreground">{s}</p>}</div>
+  );
+  const List = ({ title, rows, empty }: { title: string; rows: readonly (readonly [string, number])[]; empty: string }) => {
+    const max = Math.max(1, ...rows.map((r) => r[1]));
+    return (
+      <div className="rounded-lg border bg-card p-4"><h3 className="mb-3 font-semibold">{title}</h3>
+        {rows.length ? rows.map(([k, n]) => (
+          <div key={k} className="mb-2"><div className="flex justify-between text-sm"><span>{k}</span><span className="font-medium">{n}</span></div>
+            <div className="h-2 rounded bg-muted"><div className="h-2 rounded bg-primary" style={{ width: `${(n / max) * 100}%` }} /></div></div>
+        )) : <p className="text-sm text-muted-foreground">{empty}</p>}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card t="Chiffre d’affaires (hors annulées)" v={money(revenue)} s={`dont livré : ${money(delivered)}`} />
+        <Card t="Commandes" v={orders.length} s={`${m30.length} sur les 30 derniers jours`} />
+        <Card t="Panier moyen" v={money(valid.length ? Math.round(revenue / valid.length) : 0)} />
+        <Card t="À traiter" v={orders.filter((o) => o.status === "nouvelle" || o.status === "confirmée").length} s="nouvelles + confirmées" />
+        <Card t="Produits en vente" v={`${products.filter((p) => p.active).length} / ${products.length}`} />
+        <Card t="Note moyenne des avis" v={approved.length ? `${avg.toFixed(1)} / 5` : "—"} s={`${approved.length} publiés · ${reviews.length - approved.length} en attente`} />
+        <Card t="Messages reçus" v={messages} />
+        <Card t="CA 30 derniers jours" v={money(m30.reduce((s, o) => s + Number(o.total), 0))} />
+      </div>
+      <div className="rounded-lg border bg-card p-4">
+        <h3 className="mb-3 font-semibold">Ventes des 14 derniers jours</h3>
+        <div className="flex h-40 items-end gap-1">
+          {days.map((d) => (
+            <div key={d.label} className="flex flex-1 flex-col items-center gap-1" title={`${d.n} commande(s) · ${money(d.total)}`}>
+              <div className="w-full rounded-t bg-primary" style={{ height: `${(d.total / maxDay) * 120}px`, minHeight: d.total ? 4 : 1 }} />
+              <span className="text-[10px] text-muted-foreground">{d.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        <List title="Produits les plus vendus (quantité)" rows={topProducts} empty="Aucune vente" />
+        <List title="Wilayas les plus actives" rows={topWilayas} empty="Aucune commande" />
+        <List title="Commandes par statut" rows={byStatus} empty="—" />
+      </div>
+      {lowStock.length > 0 && (
+        <div className="rounded-lg border border-destructive bg-card p-4"><h3 className="mb-2 font-semibold text-destructive">Stock faible (≤ 5)</h3>
+          {lowStock.map((p) => <p key={p.id} className="text-sm">{p.name} : {p.stock} restant(s)</p>)}</div>
+      )}
     </div>
   );
 }
