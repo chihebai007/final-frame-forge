@@ -121,6 +121,7 @@
         el.style.setProperty('--section-image', url ? `url(${JSON.stringify(url)})` : 'none');
       }
     });
+    $("#shipCompany").dataset.v = dbTexts.shipping_company || "";
     applyLang();
   }
   async function loadProducts() {
