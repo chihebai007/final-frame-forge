@@ -9,10 +9,11 @@ const schema = z
     first_name: z.string().trim().min(1).max(100),
     last_name: z.string().trim().min(1).max(100),
     phone: z.string().trim().regex(/^[+\d\s().-]{8,20}$/, "Téléphone invalide"),
-    email: z.union([z.literal(""), z.string().trim().email().max(255)]).optional().default(""),
+    email: z.string().trim().email("Email invalide").max(255),
     wilaya: z.string().trim().max(100).optional().default(""),
     commune: z.string().trim().max(100).optional().default(""),
     address: z.string().trim().min(3).max(500),
+    delivery_type: z.enum(["domicile", "bureau"]).default("domicile"),
     website: z.string().optional(),
     items: z
       .array(z.object({ product_id: z.string().uuid(), quantity: z.number().int().min(1).max(100) }))
@@ -66,9 +67,21 @@ export const Route = createFileRoute("/api/orders")({
           lines.push({ product_id: id, product_name: p.name, quantity: q, unit_price: p.price, stock: p.stock });
         }
 
+        // Delivery fee from the admin-managed rate table (wilaya value starts with its code, e.g. "10 - Bouira").
+        let shipping_fee = 0;
+        if (customer.destination === "algerie") {
+          const code = parseInt(customer.wilaya, 10);
+          const { data: rate } = await supabaseAdmin.from("shipping_rates").select("*").eq("wilaya_code", code).maybeSingle();
+          if (!rate) return json({ error: "Choisissez votre wilaya" }, 400);
+          if (!rate.available) return json({ error: "Livraison indisponible dans cette wilaya." }, 400);
+          shipping_fee = Number(customer.delivery_type === "bureau" ? rate.desk_price : rate.home_price);
+          if (customer.delivery_type === "bureau" && !shipping_fee) shipping_fee = Number(rate.home_price);
+          total += shipping_fee;
+        }
+
         const { data: order, error: oErr } = await supabaseAdmin
           .from("orders")
-          .insert({ ...customer, email: customer.email ?? "", total })
+          .insert({ ...customer, shipping_fee, total })
           .select("id,order_number")
           .single();
         if (oErr) return json({ error: "Erreur lors de l’enregistrement" }, 500);

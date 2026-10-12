@@ -27,7 +27,7 @@
       your_cart:"Your cart",total:"Total",checkout:"Checkout",checkout_title:"Order — cash on delivery",summary:"Order summary",dest_dz:"Algeria",dest_int:"International (on quote)",
       choose_wilaya:"Choose your wilaya",choose_commune:"Choose your town",choose_commune_first:"Choose the wilaya first",other_commune:"Other (type it)",confirm:"Confirm order",pay_note:"Cash on delivery — no online payment required.",pay_note_int:"International: we will contact you with a shipping quote before confirming.",
       leave_review:"Leave a review",send_review:"Post my review",
-      ph_name:"Name",ph_message:"Your message",ph_first:"First name",ph_last:"Last name",ph_phone:"Phone",ph_email:"Email (optional)",ph_commune:"Town",ph_country:"Country",ph_address:"Delivery address",ph_comment:"Your opinion on this product",
+      ph_name:"Name",ph_message:"Your message",ph_first:"First name",ph_last:"Last name",ph_phone:"Phone",ph_email:"Email",subtotal:"Products subtotal",shipping:"Delivery",ship_home:"Home delivery",ship_desk:"Pick up at office",ship_choose:"choose your wilaya",ship_quote:"on quote",ship_none:"Delivery unavailable in this wilaya",ph_commune:"Town",ph_country:"Country",ph_address:"Delivery address",ph_comment:"Your opinion on this product",
       hero_eyebrow:"VIRGIN & EXTRA VIRGIN OLIVE OIL",hero_text:"An authentic olive oil, straight from the mountains of Kabylia. Cold extracted, 100% natural.",hero_button:"Discover our products →",
       products_title:"Our products",products_text:"A range of olive oils rooted in traditional know-how.",extra_title:"Extra Virgin",extra_text:"Intense taste, natural aromas, superior quality.",virgin_title:"Virgin",virgin_text:"An authentic flavour, both mild and fruity.",
       story_title:"A family tradition in the heart of Kabylia",story_text:"MITINAN was born from a passion: for our land, our olive trees and our heritage. Our ambition is to share an authentic, natural oil deeply tied to the mountains of Kabylia.",
@@ -46,7 +46,7 @@
       your_cart:"سلتك",total:"المجموع",checkout:"إتمام الطلب",checkout_title:"الطلب — الدفع عند الاستلام",summary:"ملخص الطلب",dest_dz:"الجزائر",dest_int:"دولي (حسب عرض سعر)",
       choose_wilaya:"اختر ولايتك",choose_commune:"اختر بلديتك",choose_commune_first:"اختر الولاية أولاً",other_commune:"أخرى (اكتبها)",confirm:"تأكيد الطلب",pay_note:"الدفع عند الاستلام — لا يلزم أي دفع عبر الإنترنت.",pay_note_int:"دولي: سنتصل بك بعرض سعر الشحن قبل التأكيد.",
       leave_review:"شارك رأيك",send_review:"نشر رأيي",
-      ph_name:"الاسم",ph_message:"رسالتك",ph_first:"الاسم",ph_last:"اللقب",ph_phone:"الهاتف",ph_email:"البريد الإلكتروني (اختياري)",ph_commune:"البلدية",ph_country:"البلد",ph_address:"عنوان التوصيل",ph_comment:"رأيك في هذا المنتج",
+      ph_name:"الاسم",ph_message:"رسالتك",ph_first:"الاسم",ph_last:"اللقب",ph_phone:"الهاتف",ph_email:"البريد الإلكتروني",subtotal:"مجموع المنتجات",shipping:"التوصيل",ship_home:"توصيل إلى المنزل",ship_desk:"الاستلام من المكتب",ship_choose:"اختر ولايتك",ship_quote:"حسب عرض السعر",ship_none:"التوصيل غير متوفر في هذه الولاية",ph_commune:"البلدية",ph_country:"البلد",ph_address:"عنوان التوصيل",ph_comment:"رأيك في هذا المنتج",
       hero_eyebrow:"زيت زيتون بكر وبكر ممتاز",hero_text:"زيت زيتون أصيل، مباشرة من جبال القبائل. معصور على البارد، طبيعي 100%.",hero_button:"اكتشف منتجاتنا ←",
       products_title:"منتجاتنا",products_text:"تشكيلة من زيوت الزيتون متجذرة في المعرفة التقليدية.",extra_title:"بكر ممتاز",extra_text:"طعم قوي، نكهات طبيعية، جودة عالية.",virgin_title:"بكر",virgin_text:"نكهة أصيلة، لطيفة وفاكهية.",
       story_title:"تقليد عائلي في قلب القبائل",story_text:"وُلدت ميتينان من شغف: بأرضنا وأشجار زيتوننا وتراثنا. طموحنا أن نشارككم زيتًا أصيلًا وطبيعيًا مرتبطًا بجبال القبائل.",
@@ -58,7 +58,7 @@
     fr: {
       add:"Ajouter au panier",buy:"Commander maintenant",in_stock:"Disponible",out:"Rupture de stock",reviews:"avis",no_review:"Pas encore d’avis",see_reviews:"Avis",empty_cart:"Votre panier est vide.",no_products:"Aucun produit disponible.",no_awards:"Nos distinctions seront bientôt affichées ici.",no_articles:"Les articles seront bientôt disponibles.",
       max_stock:"Stock maximum atteint pour ce produit.",thanks_order:"Merci ! Votre commande #{n} a été enregistrée. Nous vous appellerons pour confirmer la livraison.",thanks_int:"Merci ! Votre demande #{n} a été enregistrée. Nous vous contacterons avec un devis.",thanks_msg:"Merci ! Votre message a bien été envoyé.",thanks_review:"Merci ! Votre avis apparaîtra après validation.",err:"Une erreur est survenue, merci de réessayer.",net:"Connexion impossible, merci de réessayer.",
-      choose_commune:"Choisissez votre commune",choose_commune_first:"Choisissez d’abord la wilaya",other_commune:"Autre (à saisir)",ph_commune:"Commune",
+      choose_commune:"Choisissez votre commune",choose_commune_first:"Choisissez d’abord la wilaya",other_commune:"Autre (à saisir)",ph_commune:"Commune",subtotal:"Sous-total produits",shipping:"Livraison",ship_home:"Livraison à domicile",ship_desk:"Retrait au bureau",ship_choose:"choisissez votre wilaya",ship_quote:"sur devis",ship_none:"Livraison indisponible dans cette wilaya",ph_email:"Email",
       pay_note_int:"International : nous vous contacterons avec un devis de livraison avant confirmation.",
     },
   };
@@ -121,6 +121,7 @@
         el.style.setProperty('--section-image', url ? `url(${JSON.stringify(url)})` : 'none');
       }
     });
+    $("#shipCompany").dataset.v = dbTexts.shipping_company || "";
     applyLang();
   }
   async function loadProducts() {
@@ -224,8 +225,30 @@
     if (!cart.length) return alert(tr("empty_cart"));
     const { lines, total } = cartLines();
     $("#summaryItems").innerHTML = lines.map(({ p, q }) => `<div class="sum-row"><span>${q} × ${esc(pName(p))} <small>${esc(p.size)}</small></span><b>${money(p.price * q)}</b></div>`).join("");
-    $("#summaryTotal").textContent = money(total);
+    $("#summarySub").textContent = money(total);
     showModal("#checkoutModal");
+    loadRates().then(updateShipping);
+  }
+  let RATES = null;
+  async function loadRates() { if (!RATES) { try { RATES = await getJSON("/api/shipping"); } catch { RATES = []; } } }
+  function updateShipping() {
+    const f = $("#checkoutForm"), { total } = cartLines();
+    const intl = f.destination.value === "international";
+    const r = (RATES || []).find((x) => x.wilaya_code === parseInt(f.wilaya.value, 10));
+    const desk = r ? Number(r.desk_price) : 0, home = r ? Number(r.home_price) : 0;
+    $("#priceHome").textContent = r ? money(home) : "";
+    $("#priceDesk").textContent = r && desk ? money(desk) : "";
+    $("#deskLabel").hidden = !!r && !desk;
+    if (r && !desk && f.delivery_type.value === "bureau") f.delivery_type.value = "domicile";
+    const company = $("#shipCompany").dataset.v || "";
+    $("#shipCompany").textContent = company ? "(" + company + ")" : "";
+    let fee = null, label;
+    if (intl) label = tr("ship_quote");
+    else if (!r) label = tr("ship_choose");
+    else if (!r.available) label = tr("ship_none");
+    else { fee = f.delivery_type.value === "bureau" ? desk : home; label = money(fee); }
+    $("#summaryShip").textContent = label;
+    $("#summaryTotal").textContent = money(total + (fee || 0));
   }
   function updatePayNote() {
     const intl = $("#checkoutForm").destination.value === "international";
@@ -270,7 +293,7 @@
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { $$(".modal.show").forEach((m) => m.classList.remove("show")); toggleMenu(false); } });
   $("#cartBtn").onclick = openCart;
   $("#checkoutBtn").onclick = openCheckout;
-  $("#checkoutForm").addEventListener("change", (e) => { if (e.target.name === "destination") updatePayNote(); });
+  $("#checkoutForm").addEventListener("change", (e) => { if (e.target.name === "destination") updatePayNote(); if (["destination","wilaya","delivery_type"].includes(e.target.name)) updateShipping(); });
   let COMMUNES = null;
   const OTHER = "__autre";
   async function fillCommunes() {

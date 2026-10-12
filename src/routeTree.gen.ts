@@ -18,6 +18,7 @@ import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiOrdersRouteImport } from './routes/api/orders'
 import { Route as ApiProductsRouteImport } from './routes/api/products'
 import { Route as ApiReviewsRouteImport } from './routes/api/reviews'
+import { Route as ApiShippingRouteImport } from './routes/api/shipping'
 import { Route as ApiTextsRouteImport } from './routes/api/texts'
 
 const IndexRoute = IndexRouteImport.update({
@@ -65,6 +66,11 @@ const ApiReviewsRoute = ApiReviewsRouteImport.update({
   path: '/api/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiShippingRoute = ApiShippingRouteImport.update({
+  id: '/api/shipping',
+  path: '/api/shipping',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTextsRoute = ApiTextsRouteImport.update({
   id: '/api/texts',
   path: '/api/texts',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/api/orders': typeof ApiOrdersRoute
   '/api/products': typeof ApiProductsRoute
   '/api/reviews': typeof ApiReviewsRoute
+  '/api/shipping': typeof ApiShippingRoute
   '/api/texts': typeof ApiTextsRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/api/orders': typeof ApiOrdersRoute
   '/api/products': typeof ApiProductsRoute
   '/api/reviews': typeof ApiReviewsRoute
+  '/api/shipping': typeof ApiShippingRoute
   '/api/texts': typeof ApiTextsRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/api/orders': typeof ApiOrdersRoute
   '/api/products': typeof ApiProductsRoute
   '/api/reviews': typeof ApiReviewsRoute
+  '/api/shipping': typeof ApiShippingRoute
   '/api/texts': typeof ApiTextsRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/api/orders'
     | '/api/products'
     | '/api/reviews'
+    | '/api/shipping'
     | '/api/texts'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/api/orders'
     | '/api/products'
     | '/api/reviews'
+    | '/api/shipping'
     | '/api/texts'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/api/orders'
     | '/api/products'
     | '/api/reviews'
+    | '/api/shipping'
     | '/api/texts'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +169,7 @@ export interface RootRouteChildren {
   ApiOrdersRoute: typeof ApiOrdersRoute
   ApiProductsRoute: typeof ApiProductsRoute
   ApiReviewsRoute: typeof ApiReviewsRoute
+  ApiShippingRoute: typeof ApiShippingRoute
   ApiTextsRoute: typeof ApiTextsRoute
 }
 
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/shipping': {
+      id: '/api/shipping'
+      path: '/api/shipping'
+      fullPath: '/api/shipping'
+      preLoaderRoute: typeof ApiShippingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/texts': {
       id: '/api/texts'
       path: '/api/texts'
@@ -245,6 +265,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOrdersRoute: ApiOrdersRoute,
   ApiProductsRoute: ApiProductsRoute,
   ApiReviewsRoute: ApiReviewsRoute,
+  ApiShippingRoute: ApiShippingRoute,
   ApiTextsRoute: ApiTextsRoute,
 }
 export const routeTree = rootRouteImport
