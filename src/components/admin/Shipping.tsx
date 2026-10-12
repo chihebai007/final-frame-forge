@@ -49,13 +49,13 @@ export function Shipping() {
     );
     const { error: e2 } = await supabase.from("site_texts").upsert({ key: "shipping_company", label: "Société de livraison", value: company.trim().slice(0, 100), sort_order: 90 });
     setBusy(false);
-    if (error || e2) return toast.error("Enregistrement impossible");
+    if (error || e2) { toast.error("Enregistrement impossible"); return; }
     toast.success("Tarifs enregistrés");
     setDirty(false);
   };
 
   const importPdf = async (file: File) => {
-    if (file.size > 15 * 1024 * 1024) return toast.error("PDF trop lourd (15 Mo max)");
+    if (file.size > 15 * 1024 * 1024) { toast.error("PDF trop lourd (15 Mo max)"); return; }
     setBusy(true);
     try {
       const text = await pdfToText(file);
