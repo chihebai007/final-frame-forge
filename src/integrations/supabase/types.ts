@@ -152,6 +152,7 @@ export type Database = {
           commune: string
           country: string
           created_at: string
+          delivery_type: string
           destination: string
           email: string
           first_name: string
@@ -159,6 +160,7 @@ export type Database = {
           last_name: string
           order_number: number
           phone: string
+          shipping_fee: number
           status: string
           total: number
           wilaya: string
@@ -168,6 +170,7 @@ export type Database = {
           commune: string
           country?: string
           created_at?: string
+          delivery_type?: string
           destination?: string
           email?: string
           first_name: string
@@ -175,6 +178,7 @@ export type Database = {
           last_name: string
           order_number?: number
           phone: string
+          shipping_fee?: number
           status?: string
           total?: number
           wilaya: string
@@ -184,6 +188,7 @@ export type Database = {
           commune?: string
           country?: string
           created_at?: string
+          delivery_type?: string
           destination?: string
           email?: string
           first_name?: string
@@ -191,6 +196,7 @@ export type Database = {
           last_name?: string
           order_number?: number
           phone?: string
+          shipping_fee?: number
           status?: string
           total?: number
           wilaya?: string
@@ -291,6 +297,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shipping_rates: {
+        Row: {
+          available: boolean
+          desk_price: number
+          home_price: number
+          updated_at: string
+          wilaya: string
+          wilaya_code: number
+        }
+        Insert: {
+          available?: boolean
+          desk_price?: number
+          home_price?: number
+          updated_at?: string
+          wilaya: string
+          wilaya_code: number
+        }
+        Update: {
+          available?: boolean
+          desk_price?: number
+          home_price?: number
+          updated_at?: string
+          wilaya?: string
+          wilaya_code?: number
+        }
+        Relationships: []
       }
       site_texts: {
         Row: {
