@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
+import { Shipping } from "@/components/admin/Shipping";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -88,6 +89,7 @@ function AdminPage() {
               <TabsTrigger value="awards">Distinctions</TabsTrigger>
               <TabsTrigger value="reviews">Avis clients</TabsTrigger>
               <TabsTrigger value="orders">Commandes</TabsTrigger>
+              <TabsTrigger value="shipping">Livraison</TabsTrigger>
               <TabsTrigger value="messages">Messages</TabsTrigger>
             </TabsList>
             <TabsContent value="stats"><Stats /></TabsContent>
@@ -98,6 +100,7 @@ function AdminPage() {
             <TabsContent value="awards"><Awards /></TabsContent>
             <TabsContent value="reviews"><Reviews /></TabsContent>
             <TabsContent value="orders"><Orders /></TabsContent>
+            <TabsContent value="shipping"><Shipping /></TabsContent>
             <TabsContent value="messages"><Messages /></TabsContent>
           </Tabs>
         )}
@@ -455,6 +458,7 @@ function Orders() {
           <p className="text-sm text-muted-foreground">{o.destination === "international" ? <b>International (devis) · {o.country} · </b> : null}{o.address}, {o.commune}, {o.wilaya} · {date(o.created_at)}</p>
           <ul className="text-sm">
             {o.order_items.map((i) => <li key={i.id}>{i.quantity} × {i.product_name} ({money(i.unit_price)})</li>)}
+            {o.destination !== "international" && <li>Livraison {o.delivery_type === "bureau" ? "au bureau" : "à domicile"} : {money(o.shipping_fee)}</li>}
           </ul>
         </div>
       ))}
