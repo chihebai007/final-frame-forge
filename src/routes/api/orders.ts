@@ -9,10 +9,11 @@ const schema = z
     first_name: z.string().trim().min(1).max(100),
     last_name: z.string().trim().min(1).max(100),
     phone: z.string().trim().regex(/^[+\d\s().-]{8,20}$/, "Téléphone invalide"),
-    email: z.union([z.literal(""), z.string().trim().email().max(255)]).optional().default(""),
+    email: z.string().trim().email("Email invalide").max(255),
     wilaya: z.string().trim().max(100).optional().default(""),
     commune: z.string().trim().max(100).optional().default(""),
     address: z.string().trim().min(3).max(500),
+    delivery_type: z.enum(["domicile", "bureau"]).default("domicile"),
     website: z.string().optional(),
     items: z
       .array(z.object({ product_id: z.string().uuid(), quantity: z.number().int().min(1).max(100) }))
