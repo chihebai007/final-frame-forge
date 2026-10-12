@@ -67,7 +67,7 @@
 
   const money = (n) => new Intl.NumberFormat("fr-DZ").format(Number(n) || 0) + (lang === "ar" ? " دج" : " DA");
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
-  const safeUrl = (u) => (/^(https?:\/\/|\/)/i.test(String(u || "")) ? String(u) : FALLBACK_IMG);
+  const safeUrl = (u) => globalThis.MitinanImages.safeImageUrl(u) || FALLBACK_IMG;
   const stars = (r) => "★★★★★".slice(0, Math.round(r)) + "☆☆☆☆☆".slice(0, 5 - Math.round(r));
   const orderNo = (n) => "MIT-" + String(n).padStart(6, "0");
 
@@ -109,6 +109,18 @@
   // ---------- Données ----------
   async function loadTexts() {
     try { dbTexts = await getJSON("/api/texts"); } catch (e) { console.warn("Textes non chargés", e); }
+    $$('[data-image]').forEach((el) => {
+      const key = el.dataset.image;
+      if (!(key in dbTexts)) return;
+      const url = globalThis.MitinanImages.safeImageUrl(dbTexts[key]);
+      if (el.tagName === 'IMG') {
+        el.hidden = !url;
+        if (url) el.src = url;
+        else el.removeAttribute('src');
+      } else {
+        el.style.setProperty('--section-image', url ? `url(${JSON.stringify(url)})` : 'none');
+      }
+    });
     applyLang();
   }
   async function loadProducts() {

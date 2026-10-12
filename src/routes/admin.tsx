@@ -84,6 +84,7 @@ function AdminPage() {
               <TabsTrigger value="products">Produits</TabsTrigger>
               <TabsTrigger value="articles">Articles</TabsTrigger>
               <TabsTrigger value="texts">Textes du site</TabsTrigger>
+              <TabsTrigger value="photos">Photos du site</TabsTrigger>
               <TabsTrigger value="awards">Distinctions</TabsTrigger>
               <TabsTrigger value="reviews">Avis clients</TabsTrigger>
               <TabsTrigger value="orders">Commandes</TabsTrigger>
@@ -93,6 +94,7 @@ function AdminPage() {
             <TabsContent value="products"><Products /></TabsContent>
             <TabsContent value="articles"><Articles /></TabsContent>
             <TabsContent value="texts"><Texts /></TabsContent>
+            <TabsContent value="photos"><SitePhotos /></TabsContent>
             <TabsContent value="awards"><Awards /></TabsContent>
             <TabsContent value="reviews"><Reviews /></TabsContent>
             <TabsContent value="orders"><Orders /></TabsContent>
@@ -148,7 +150,9 @@ async function fileToDataUrl(file: File): Promise<string> {
     const scale = Math.min(1, max / Math.max(img.width, img.height));
     const c = document.createElement("canvas");
     c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
-    c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+    const context = c.getContext("2d");
+    if (!context) throw new Error("Impossible de préparer l’image");
+    context.drawImage(img, 0, 0, c.width, c.height);
     return c.toDataURL("image/jpeg", 0.8);
   } finally { URL.revokeObjectURL(url); }
 }
@@ -163,13 +167,13 @@ function ImagePicker({ value, onChange }: { value: string; onChange: (v: string)
   }
   const Thumb = ({ src }: { src: string }) => (
     <div className="relative h-16 w-16">
-      <button type="button" onClick={() => onChange(src)}
-        className={`h-full w-full overflow-hidden rounded border-2 ${value === src ? "border-primary" : "border-transparent"}`}>
+      <Button type="button" variant="ghost" aria-label="Sélectionner cette image" onClick={() => onChange(src)}
+        className={`h-full w-full overflow-hidden rounded border-2 p-0 ${value === src ? "border-primary" : "border-transparent"}`}>
         <img src={src} alt="" className="h-full w-full object-cover" />
-      </button>
+      </Button>
       {value === src && (
-        <button type="button" aria-label="Retirer l’image" onClick={() => onChange("")}
-          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground shadow">×</button>
+        <Button type="button" variant="destructive" aria-label="Retirer l’image" onClick={() => onChange("")}
+          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs font-bold shadow">×</Button>
       )}
     </div>
   );
@@ -333,13 +337,56 @@ function Articles() {
   );
 }
 
+function SitePhotos() {
+  const [list, setList] = useState<Tables<"site_texts">[]>([]);
+  const [draft, setDraft] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    supabase.from("site_texts").select("*").like("key", "image_%").order("sort_order").then(({ data, error }) => {
+      if (error) {
+        toast.error("Impossible de charger les photos");
+        return;
+      }
+      setList(data ?? []);
+      setDraft(Object.fromEntries((data ?? []).map((row) => [row.key, row.value])));
+      setLoaded(true);
+    });
+  }, []);
+  async function save() {
+    setBusy(true);
+    try {
+      for (const row of list.filter((row) => row.value !== draft[row.key])) {
+        const { data, error } = await supabase.from("site_texts").update({ value: draft[row.key] ?? "" }).eq("key", row.key).select("key");
+        if (error || !data?.length) throw new Error("Impossible d’enregistrer les photos");
+      }
+      setList(list.map((row) => ({ ...row, value: draft[row.key] ?? row.value })));
+      toast.success("Photos enregistrées");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Impossible d’enregistrer les photos");
+    } finally { setBusy(false); }
+  }
+  return <div className="space-y-6">
+    <h2 className="text-xl font-semibold">Photos du site</h2>
+    {!loaded && <p>Chargement des photos…</p>}
+    <div className="grid gap-6 md:grid-cols-2">
+      {list.map((row) => <section key={row.key} aria-label={row.label} className="space-y-3 border-b pb-6">
+        <h3 className="font-semibold">{row.label}</h3>
+        <ImagePicker value={draft[row.key] ?? ""} onChange={(value) => setDraft((previous) => ({ ...previous, [row.key]: value }))} />
+      </section>)}
+    </div>
+    <Button disabled={busy || !loaded} onClick={save}>{busy ? "Enregistrement…" : "Enregistrer les photos"}</Button>
+  </div>;
+}
+
 function Texts() {
   const [list, setList] = useState<Tables<"site_texts">[]>([]);
   const [draft, setDraft] = useState<Record<string, string>>({});
   useEffect(() => {
     supabase.from("site_texts").select("*").order("sort_order").then(({ data }) => {
-      setList(data ?? []);
-      setDraft(Object.fromEntries((data ?? []).map((t) => [t.key, t.value])));
+      const texts = (data ?? []).filter((row) => !row.key.startsWith("image_"));
+      setList(texts);
+      setDraft(Object.fromEntries(texts.map((t) => [t.key, t.value])));
     });
   }, []);
   async function save() {
