@@ -26,7 +26,7 @@
 </header>
 
 <main>
-<section id="accueil" class="hero">
+<section id="accueil" class="hero" data-image="image_hero_background">
   <div class="hero-overlay"></div>
   <div class="hero-content">
     <div class="eyebrow" data-t="hero_eyebrow">HUILE D’OLIVE VIERGE & VIERGE EXTRA</div>
@@ -35,20 +35,20 @@
     <p data-t="hero_text">Une huile d’olive authentique, directement des montagnes de Kabylie. Extraction à froid, 100% naturelle.</p>
     <div class="hero-btns"><a class="btn gold" href="#boutique" data-i="order_now">Commander maintenant →</a><a class="btn ghost" href="#produits" data-t="hero_button">Découvrir nos produits →</a></div>
   </div>
-  <div class="hero-bottle"><img src="/images/IMG-20260706-WA0064.jpg" alt="Bouteille d’huile d’olive MITINAN"></div>
+  <div class="hero-bottle"><img data-image="image_hero_bottle" src="/images/IMG-20260706-WA0064.jpg" alt="Bouteille d’huile d’olive MITINAN"></div>
   <div class="badges"><div><b data-i="b1">100% Naturelle</b><span data-i="b1s">Extraction à froid</span></div><div><b data-i="b2">Au cœur</b><span data-i="b2s">de la Kabylie</span></div><div><b data-i="b3">Produit authentique</b><span data-i="b3s">d’Algérie</span></div></div>
 </section>
 
 <section id="produits" class="section products-intro">
   <div class="section-title"><span>MITINAN</span><h2 data-t="products_title">Nos produits</h2><p data-t="products_text">Une gamme d’huiles d’olive enracinée dans un savoir-faire traditionnel.</p><a class="btn dark" href="#boutique" data-i="see_range">Voir toute la gamme →</a></div>
   <div class="product-cards">
-    <article class="category-card extra"><img src="/images/IMG-20260706-WA0064.jpg" alt="Huile d’olive Extra Vierge"><div class="cat-body"><small data-i="olive_oil">Huile d’olive</small><h3 data-t="extra_title">Extra Vierge</h3><p data-t="extra_text">Goût intense, arômes naturels, qualité supérieure.</p><a href="#boutique" data-filter-link="extra-vierge" data-i="discover">Découvrir →</a></div></article>
-    <article class="category-card virgin"><img src="/images/IMG-20260706-WA0063.jpg" alt="Huile d’olive Vierge"><div class="cat-body"><small data-i="olive_oil">Huile d’olive</small><h3 data-t="virgin_title">Vierge</h3><p data-t="virgin_text">Une saveur authentique, à la fois douce et fruitée.</p><a href="#boutique" data-filter-link="vierge" data-i="discover">Découvrir →</a></div></article>
+    <article class="category-card extra"><img data-image="image_category_extra" src="/images/IMG-20260706-WA0064.jpg" alt="Huile d’olive Extra Vierge"><div class="cat-body"><small data-i="olive_oil">Huile d’olive</small><h3 data-t="extra_title">Extra Vierge</h3><p data-t="extra_text">Goût intense, arômes naturels, qualité supérieure.</p><a href="#boutique" data-filter-link="extra-vierge" data-i="discover">Découvrir →</a></div></article>
+    <article class="category-card virgin"><img data-image="image_category_virgin" src="/images/IMG-20260706-WA0063.jpg" alt="Huile d’olive Vierge"><div class="cat-body"><small data-i="olive_oil">Huile d’olive</small><h3 data-t="virgin_title">Vierge</h3><p data-t="virgin_text">Une saveur authentique, à la fois douce et fruitée.</p><a href="#boutique" data-filter-link="vierge" data-i="discover">Découvrir →</a></div></article>
   </div>
 </section>
 
 <section id="histoire" class="story">
-  <div class="story-image"></div><div class="story-text"><span data-i="nav_story">Notre histoire</span><h2 data-t="story_title">Une tradition familiale au cœur de la Kabylie</h2><p data-t="story_text">MITINAN est née d’une passion : celle de notre terre, de nos oliviers et de notre héritage.</p><a class="btn gold" href="#terroir" data-i="more">En savoir plus →</a></div>
+  <div class="story-image" data-image="image_story"></div><div class="story-text"><span data-i="nav_story">Notre histoire</span><h2 data-t="story_title">Une tradition familiale au cœur de la Kabylie</h2><p data-t="story_text">MITINAN est née d’une passion : celle de notre terre, de nos oliviers et de notre héritage.</p><a class="btn gold" href="#terroir" data-i="more">En savoir plus →</a></div>
 </section>
 
 <section id="terroir" class="trust section">
@@ -69,7 +69,7 @@
   <div id="awardGrid" class="award-grid"></div>
 </section>
 
-<section class="cta-band"><div><h2 data-t="cta_title">Vous cherchez une production spécifique ?</h2><p data-t="cta_text">Contactez MITINAN pour vos demandes professionnelles et vos besoins en volume.</p></div><a class="btn gold" href="#contact" data-i="contact_us">Nous contacter →</a></section>
+<section class="cta-band" data-image="image_cta"><div><h2 data-t="cta_title">Vous cherchez une production spécifique ?</h2><p data-t="cta_text">Contactez MITINAN pour vos demandes professionnelles et vos besoins en volume.</p></div><a class="btn gold" href="#contact" data-i="contact_us">Nous contacter →</a></section>
 
 <section id="articles" class="section articles"><div class="section-title"><span data-i="journal">JOURNAL MITINAN</span><h2 data-t="articles_title">Nos actualités</h2><p data-t="articles_text">Terroir, récolte, huile d’olive et vie de la marque.</p></div><div id="articleGrid" class="article-grid"></div></section>
 
@@ -98,6 +98,7 @@
 <div id="reviewModal" class="modal"><div class="modal-box"><button type="button" class="close" data-close aria-label="Fermer">×</button><h2 id="reviewTitle"></h2><div id="reviewList" class="review-list"></div>
 <h3 data-i="leave_review">Donnez votre avis</h3>
 <form id="reviewForm" class="checkout"><div class="stars-input" id="starsInput"></div><input name="name" data-ph="ph_name" placeholder="Nom" required maxlength="80"><textarea name="comment" data-ph="ph_comment" placeholder="Votre avis sur ce produit" required minlength="3" maxlength="1000"></textarea><input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><button class="btn gold full" data-i="send_review">Publier mon avis</button></form></div></div>
+<script src="/image-url.js"></script>
 <script src="/app.js"></script>
 </body>
 </html>
