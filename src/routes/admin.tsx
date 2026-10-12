@@ -344,7 +344,10 @@ function SitePhotos() {
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     supabase.from("site_texts").select("*").like("key", "image_%").order("sort_order").then(({ data, error }) => {
-      if (error) return toast.error("Impossible de charger les photos");
+      if (error) {
+        toast.error("Impossible de charger les photos");
+        return;
+      }
       setList(data ?? []);
       setDraft(Object.fromEntries((data ?? []).map((row) => [row.key, row.value])));
       setLoaded(true);

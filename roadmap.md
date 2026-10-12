@@ -1,2 +1,2 @@
-- [ ] Rendre les six photos fixes modifiables depuis l’administration.
-- [ ] Vérifier l’enregistrement, le retrait et l’affichage des photos, y compris celles importées.
+- [x] Rendre les six photos fixes modifiables depuis l’administration.
+- [x] Vérifier l’enregistrement, le retrait et l’affichage des photos, y compris celles importées.
