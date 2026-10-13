@@ -627,12 +627,24 @@ function Stats() {
   const avg = approved.length ? approved.reduce((s, r) => s + r.rating, 0) / approved.length : 0;
   const lowStock = products.filter((p) => p.active && p.stock <= 5);
 
-  const days = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 13 + i);
-    const n = valid.filter((o) => new Date(o.created_at).toDateString() === d.toDateString());
-    return { label: d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }), n: n.length, total: n.reduce((s, o) => s + Number(o.total), 0) };
-  });
-  const maxDay = Math.max(1, ...days.map((d) => d.total));
+  const chartData = (() => {
+    const dayStart = (d: Date) => { d.setHours(0, 0, 0, 0); return d; };
+    if (chartDays <= 60) {
+      return Array.from({ length: chartDays }, (_, i) => {
+        const d = dayStart(new Date()); d.setDate(d.getDate() - (chartDays - 1) + i);
+        const n = valid.filter((o) => new Date(o.created_at).toDateString() === d.toDateString());
+        return { label: d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }), n: n.length, total: n.reduce((s, o) => s + Number(o.total), 0) };
+      });
+    }
+    const months = chartDays === 180 ? 6 : 12;
+    return Array.from({ length: months }, (_, i) => {
+      const d = dayStart(new Date()); d.setDate(1); d.setMonth(d.getMonth() - (months - 1) + i);
+      const next = new Date(d); next.setMonth(next.getMonth() + 1);
+      const n = valid.filter((o) => { const t = new Date(o.created_at); return t >= d && t < next; });
+      return { label: d.toLocaleDateString("fr-FR", { month: "short", ...(chartDays === 365 ? { year: "2-digit" } : {}) }), n: n.length, total: n.reduce((s, o) => s + Number(o.total), 0) };
+    });
+  })();
+  const maxDay = Math.max(1, ...chartData.map((d) => d.total));
   const customerSources = count((o) => [[o.acquisition_source, 1]]);
   const customers = new Map<string, number>(); valid.forEach((o) => customers.set(o.email.toLowerCase(), (customers.get(o.email.toLowerCase()) ?? 0) + 1));
 
