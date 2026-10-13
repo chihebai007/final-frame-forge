@@ -684,7 +684,7 @@ function Stats() {
           <select aria-label="Période du graphique des ventes" className="h-10 rounded-md border bg-background px-2 text-sm" value={chartDays} onChange={(e) => setChartDays(Number(e.target.value))}>
             <option value={5}>5 derniers jours</option>
             <option value={14}>14 derniers jours</option>
-            <option value={30}>Mois dernier</option>
+            <option value={30}>Mois dernier (30 jours)</option>
             <option value={180}>6 derniers mois</option>
             <option value={365}>Année dernière</option>
           </select>
