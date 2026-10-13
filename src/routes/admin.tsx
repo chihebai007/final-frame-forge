@@ -48,7 +48,7 @@ function AdminPage() {
   const [ready, setReady] = useState(false);
   const [role, setRole] = useState<string | null>(null);
   const [tab, setTab] = useState("stats");
-  const tabs = [{v:"stats",l:"Statistiques",icon:LayoutDashboard},{v:"orders",l:"Commandes",icon:ShoppingBag},{v:"products",l:"Produits",icon:Package},{v:"reviews",l:"Avis clients",icon:Star},{v:"shipping",l:"Livraison",icon:Truck},{v:"messages",l:"Messages",icon:Mail},{v:"articles",l:"Articles",icon:FileText},{v:"texts",l:"Textes du site",icon:Type},{v:"photos",l:"Photos du site",icon:Image},{v:"awards",l:"Distinctions",icon:Award},{v:"team",l:"Équipe",icon:Users}];
+  const tabs = [{v:"stats",l:"Statistiques",icon:LayoutDashboard},{v:"orders",l:"Commandes",icon:ShoppingBag},{v:"products",l:"Produits",icon:Package},{v:"reviews",l:"Avis clients",icon:Star},{v:"shipping",l:"Livraison",icon:Truck},{v:"messages",l:"Messages",icon:Mail},{v:"articles",l:"Articles",icon:FileText},{v:"texts",l:"Textes du site",icon:Type},{v:"photos",l:"Photos du site",icon:ImageIcon},{v:"awards",l:"Distinctions",icon:Award},{v:"team",l:"Équipe",icon:Users}];
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
