@@ -679,9 +679,18 @@ function Stats() {
         <Card t="Frais de livraison" v={money(valid.reduce((s, o) => s + Number(o.shipping_fee), 0))} />
       </div>
       <div className="rounded-lg border bg-card p-4">
-        <h3 className="mb-3 font-semibold">Ventes des 14 derniers jours</h3>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-semibold">Ventes</h3>
+          <select aria-label="Période du graphique des ventes" className="h-10 rounded-md border bg-background px-2 text-sm" value={chartDays} onChange={(e) => setChartDays(Number(e.target.value))}>
+            <option value={5}>5 derniers jours</option>
+            <option value={14}>14 derniers jours</option>
+            <option value={30}>Mois dernier</option>
+            <option value={180}>6 derniers mois</option>
+            <option value={365}>Année dernière</option>
+          </select>
+        </div>
         <div className="overflow-x-auto"><div className="flex h-40 min-w-[460px] items-end gap-1">
-          {days.map((d) => (
+          {chartData.map((d) => (
             <div key={d.label} className="flex flex-1 flex-col items-center gap-1" title={`${d.n} commande(s) · ${money(d.total)}`}>
               <div className="w-full rounded-t bg-primary" style={{ height: `${(d.total / maxDay) * 120}px`, minHeight: d.total ? 4 : 1 }} />
               <span className="text-[10px] text-muted-foreground">{d.label}</span>
