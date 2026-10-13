@@ -4,6 +4,30 @@
   const $$ = (s) => document.querySelectorAll(s);
   const FALLBACK_IMG = "/images/IMG-20260706-WA0064.jpg";
   const LOAD_TIME = Date.now();
+  function acquisitionSource() {
+    let source = 'Accès direct';
+    try {
+      const url = new URL(window.top.location.href);
+      const campaign = url.searchParams.get('utm_source');
+      const ref = window.parent === window ? document.referrer : window.parent.document.referrer;
+      if (campaign) source = campaign;
+      else if (ref && new URL(ref).origin !== location.origin) source = new URL(ref).hostname;
+      source = source.slice(0, 100);
+      const previous = sessionStorage.getItem('mitinan_source');
+      if (previous) return previous;
+      sessionStorage.setItem('mitinan_source', source);
+    } catch { /* Tracking is optional when browser storage is disabled. */ }
+    return source;
+  }
+  const SOURCE = acquisitionSource();
+  async function recordVisit() {
+    if (navigator.doNotTrack === '1') return;
+    try {
+      if (sessionStorage.getItem('mitinan_visit_recorded')) return;
+      const result = await fetch('/api/public/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source: SOURCE, language: lang, device: matchMedia('(max-width: 650px)').matches ? 'Téléphone' : matchMedia('(max-width: 1000px)').matches ? 'Tablette' : 'Ordinateur' }) });
+      if (result.ok) sessionStorage.setItem('mitinan_visit_recorded', '1');
+    } catch { /* Never interrupt shopping if analytics is unavailable. */ }
+  }
   let products = [], reviews = [], dbTexts = {};
   let currentFilter = "all";
   let reviewProduct = null, reviewRating = 5;
@@ -331,6 +355,7 @@
     };
   }
   handleForm($("#checkoutForm"), async (body) => {
+    body.acquisition_source = SOURCE;
     body.items = cart;
     if (body.commune === OTHER) body.commune = body.commune_other || "";
     delete body.commune_other;
@@ -355,6 +380,7 @@
   });
 
   saveCart();
+  recordVisit();
   loadTexts();
   loadProducts();
   loadAwards();

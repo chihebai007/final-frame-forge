@@ -13,7 +13,8 @@ export const parseShippingPdf = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (isAdmin !== true) throw new Error("Accès refusé");
+    const { data: isManager } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "manager" });
+    if (isAdmin !== true && isManager !== true) throw new Error("Accès refusé");
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Service d’analyse indisponible");
     const list = data.wilayas.map((w, i) => `${i + 1}. ${w}`).join("\n");

@@ -47,7 +47,7 @@ export function Shipping() {
     const { error } = await supabase.from("shipping_rates").upsert(
       rates.map(({ wilaya_code, wilaya, home_price, desk_price, available }) => ({ wilaya_code, wilaya, home_price, desk_price, available })),
     );
-    const { error: e2 } = await supabase.from("site_texts").upsert({ key: "shipping_company", label: "Société de livraison", value: company.trim().slice(0, 100), sort_order: 90 });
+    const { error: e2 } = await supabase.from("site_texts").update({ value: company.trim().slice(0, 100) }).eq('key', 'shipping_company');
     setBusy(false);
     if (error || e2) { toast.error("Enregistrement impossible"); return; }
     toast.success("Tarifs enregistrés");
@@ -85,20 +85,20 @@ export function Shipping() {
           <p className="mt-1 text-xs text-muted-foreground">{busy ? "Analyse en cours…" : "Les prix trouvés remplacent ceux du tableau. Rien n’est enregistré avant votre validation."}</p>
         </div>
       </div>
-      <div className="sticky top-0 z-10 flex items-center justify-between rounded-md border bg-card p-3">
+      <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-md border bg-card p-3">
         <span className="text-sm">{dirty ? "Modifications non enregistrées" : "Tarifs à jour"} · Un bureau à 0 DA n’est pas proposé au client.</span>
         <Button onClick={save} disabled={busy || !dirty}>Enregistrer</Button>
       </div>
       <div className="overflow-x-auto rounded-md border bg-card">
-        <table className="w-full text-sm">
+        <table className="shipping-table w-full text-sm">
           <thead><tr className="border-b text-left"><th className="p-2">Wilaya</th><th className="p-2">Domicile (DA)</th><th className="p-2">Bureau (DA)</th><th className="p-2">Livrée</th></tr></thead>
           <tbody>
             {rates.map((r) => (
               <tr key={r.wilaya_code} className="border-b">
-                <td className="p-2">{String(r.wilaya_code).padStart(2, "0")} - {r.wilaya}</td>
-                <td className="p-2"><Input type="number" min={0} className="w-28" value={r.home_price} onChange={(e) => set(r.wilaya_code, { home_price: Math.max(0, Number(e.target.value)) })} /></td>
-                <td className="p-2"><Input type="number" min={0} className="w-28" value={r.desk_price} onChange={(e) => set(r.wilaya_code, { desk_price: Math.max(0, Number(e.target.value)) })} /></td>
-                <td className="p-2"><Switch checked={r.available} onCheckedChange={(v) => set(r.wilaya_code, { available: v })} /></td>
+                <td className="p-2" data-label="Wilaya">{String(r.wilaya_code).padStart(2, "0")} - {r.wilaya}</td>
+                <td className="p-2" data-label="Domicile (DA)"><Input aria-label={`Domicile ${r.wilaya}`} type="number" min={0} className="w-28" value={r.home_price} onChange={(e) => set(r.wilaya_code, { home_price: Math.max(0, Number(e.target.value)) })} /></td>
+                <td className="p-2" data-label="Bureau (DA)"><Input aria-label={`Bureau ${r.wilaya}`} type="number" min={0} className="w-28" value={r.desk_price} onChange={(e) => set(r.wilaya_code, { desk_price: Math.max(0, Number(e.target.value)) })} /></td>
+                <td className="p-2" data-label="Livrée"><Switch aria-label={`Livraison ${r.wilaya}`} checked={r.available} onCheckedChange={(v) => set(r.wilaya_code, { available: v })} /></td>
               </tr>
             ))}
           </tbody>

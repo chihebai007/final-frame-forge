@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
+import { getRequest } from '@tanstack/react-start/server';
 
 export const manageTeam = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
@@ -24,7 +25,7 @@ export const manageTeam = createServerFn({ method: 'POST' })
         if (userId || result.users.length < 100) break;
       }
       if (!userId) {
-        const { data: invitation, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, { redirectTo: `${new URL(context.request.url).origin}/reset-password` });
+        const { data: invitation, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, { redirectTo: `${new URL(getRequest().url).origin}/reset-password` });
         if (error || !invitation.user) throw new Error('Invitation impossible. Réessayez ou utilisez un compte existant.');
         userId = invitation.user.id;
       }
