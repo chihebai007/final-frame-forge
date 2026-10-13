@@ -1,6 +1,6 @@
 - [x] Rendre les six photos fixes modifiables depuis l’administration.
 - [x] Vérifier l’enregistrement, le retrait et l’affichage des photos, y compris celles importées.
-- [ ] Améliorer la boutique et l’administration sur téléphone.
-- [ ] Enrichir les statistiques avec les sources de visites et l’origine des clients.
-- [ ] Ajouter un accès manager limité à la boutique, contrôlé par l’admin.
-- [ ] Autoriser et tester la suppression uniquement des commandes annulées.
+- [x] Améliorer la boutique et l’administration sur téléphone.
+- [x] Enrichir les statistiques avec les sources de visites et l’origine des clients.
+- [x] Ajouter un accès manager limité à la boutique, contrôlé par l’admin.
+- [x] Autoriser et tester la suppression uniquement des commandes annulées.
