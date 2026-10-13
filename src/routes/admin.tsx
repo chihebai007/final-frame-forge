@@ -15,7 +15,7 @@ import { Shipping } from "@/components/admin/Shipping";
 import { Team } from "@/components/admin/Team";
 import { Traffic } from "@/components/admin/Traffic";
 import { canDeleteOrder, canOpenTab } from "@/lib/shop-access";
-import { LayoutDashboard, Package, ShoppingBag, Users, Star, Truck, Mail, FileText, Image, Award, Type } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, Star, Truck, Mail, FileText, Image as ImageIcon, Award, Type } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -428,7 +428,7 @@ function Orders() {
   async function remove(o: Order) {
     if (!canDeleteOrder(o.status) || !confirm(`Supprimer définitivement la commande #MIT-${String(o.order_number).padStart(6, '0')} annulée ?`)) return;
     const { data, error } = await supabase.from('orders').delete().eq('id', o.id).eq('status', 'annulée').select('id');
-    if (error || !data?.length) return toast.error('Suppression impossible : la commande doit être annulée.');
+    if (error || !data?.length) { toast.error('Suppression impossible : la commande doit être annulée.'); return; }
     toast.success('Commande annulée supprimée'); load();
   }
   if (!list.length) return <p className="text-muted-foreground">Aucune commande pour le moment.</p>;
