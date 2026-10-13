@@ -588,6 +588,7 @@ function Stats() {
   type O = { id: string; total: number; shipping_fee: number; status: string; email: string; country: string; acquisition_source: string; wilaya: string; destination: string; created_at: string; order_items: { product_name: string; quantity: number; unit_price: number }[] };
   const [orders, setOrders] = useState<O[] | null>(null);
   const [period, setPeriod] = useState(30);
+  const [chartDays, setChartDays] = useState(14);
   const [products, setProducts] = useState<Tables<"products">[]>([]);
   const [reviews, setReviews] = useState<Tables<"reviews">[]>([]);
   const [messages, setMessages] = useState(0);
@@ -626,12 +627,24 @@ function Stats() {
   const avg = approved.length ? approved.reduce((s, r) => s + r.rating, 0) / approved.length : 0;
   const lowStock = products.filter((p) => p.active && p.stock <= 5);
 
-  const days = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 13 + i);
-    const n = valid.filter((o) => new Date(o.created_at).toDateString() === d.toDateString());
-    return { label: d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }), n: n.length, total: n.reduce((s, o) => s + Number(o.total), 0) };
-  });
-  const maxDay = Math.max(1, ...days.map((d) => d.total));
+  const chartData = (() => {
+    const dayStart = (d: Date) => { d.setHours(0, 0, 0, 0); return d; };
+    if (chartDays <= 60) {
+      return Array.from({ length: chartDays }, (_, i) => {
+        const d = dayStart(new Date()); d.setDate(d.getDate() - (chartDays - 1) + i);
+        const n = valid.filter((o) => new Date(o.created_at).toDateString() === d.toDateString());
+        return { label: d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }), n: n.length, total: n.reduce((s, o) => s + Number(o.total), 0) };
+      });
+    }
+    const months = chartDays === 180 ? 6 : 12;
+    return Array.from({ length: months }, (_, i) => {
+      const d = dayStart(new Date()); d.setDate(1); d.setMonth(d.getMonth() - (months - 1) + i);
+      const next = new Date(d); next.setMonth(next.getMonth() + 1);
+      const n = valid.filter((o) => { const t = new Date(o.created_at); return t >= d && t < next; });
+      return { label: d.toLocaleDateString("fr-FR", { month: "short", ...(chartDays === 365 ? { year: "2-digit" } : {}) }), n: n.length, total: n.reduce((s, o) => s + Number(o.total), 0) };
+    });
+  })();
+  const maxDay = Math.max(1, ...chartData.map((d) => d.total));
   const customerSources = count((o) => [[o.acquisition_source, 1]]);
   const customers = new Map<string, number>(); valid.forEach((o) => customers.set(o.email.toLowerCase(), (customers.get(o.email.toLowerCase()) ?? 0) + 1));
 
@@ -666,9 +679,18 @@ function Stats() {
         <Card t="Frais de livraison" v={money(valid.reduce((s, o) => s + Number(o.shipping_fee), 0))} />
       </div>
       <div className="rounded-lg border bg-card p-4">
-        <h3 className="mb-3 font-semibold">Ventes des 14 derniers jours</h3>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-semibold">Ventes</h3>
+          <select aria-label="Période du graphique des ventes" className="h-10 rounded-md border bg-background px-2 text-sm" value={chartDays} onChange={(e) => setChartDays(Number(e.target.value))}>
+            <option value={5}>5 derniers jours</option>
+            <option value={14}>14 derniers jours</option>
+            <option value={30}>Mois dernier (30 jours)</option>
+            <option value={180}>6 derniers mois</option>
+            <option value={365}>Année dernière</option>
+          </select>
+        </div>
         <div className="overflow-x-auto"><div className="flex h-40 min-w-[460px] items-end gap-1">
-          {days.map((d) => (
+          {chartData.map((d) => (
             <div key={d.label} className="flex flex-1 flex-col items-center gap-1" title={`${d.n} commande(s) · ${money(d.total)}`}>
               <div className="w-full rounded-t bg-primary" style={{ height: `${(d.total / maxDay) * 120}px`, minHeight: d.total ? 4 : 1 }} />
               <span className="text-[10px] text-muted-foreground">{d.label}</span>
