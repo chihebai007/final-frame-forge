@@ -588,6 +588,7 @@ function Stats() {
   type O = { id: string; total: number; shipping_fee: number; status: string; email: string; country: string; acquisition_source: string; wilaya: string; destination: string; created_at: string; order_items: { product_name: string; quantity: number; unit_price: number }[] };
   const [orders, setOrders] = useState<O[] | null>(null);
   const [period, setPeriod] = useState(30);
+  const [chartDays, setChartDays] = useState(14);
   const [products, setProducts] = useState<Tables<"products">[]>([]);
   const [reviews, setReviews] = useState<Tables<"reviews">[]>([]);
   const [messages, setMessages] = useState(0);
