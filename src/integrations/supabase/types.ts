@@ -148,6 +148,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          acquisition_source: string
           address: string
           commune: string
           country: string
@@ -166,6 +167,7 @@ export type Database = {
           wilaya: string
         }
         Insert: {
+          acquisition_source?: string
           address: string
           commune: string
           country?: string
@@ -184,6 +186,7 @@ export type Database = {
           wilaya: string
         }
         Update: {
+          acquisition_source?: string
           address?: string
           commune?: string
           country?: string
@@ -367,6 +370,33 @@ export type Database = {
         }
         Relationships: []
       }
+      visit_daily: {
+        Row: {
+          country: string
+          day: string
+          device: string
+          language: string
+          source: string
+          visits: number
+        }
+        Insert: {
+          country?: string
+          day?: string
+          device: string
+          language: string
+          source: string
+          visits?: number
+        }
+        Update: {
+          country?: string
+          day?: string
+          device?: string
+          language?: string
+          source?: string
+          visits?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -379,9 +409,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      record_shop_visit: {
+        Args: {
+          p_country: string
+          p_device: string
+          p_language: string
+          p_source: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -509,7 +548,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "manager"],
     },
   },
 } as const

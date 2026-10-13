@@ -12,6 +12,10 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
 import { Shipping } from "@/components/admin/Shipping";
+import { Team } from "@/components/admin/Team";
+import { Traffic } from "@/components/admin/Traffic";
+import { canDeleteOrder, canOpenTab } from "@/lib/shop-access";
+import { LayoutDashboard, Package, ShoppingBag, Users, Star, Truck, Mail, FileText, Image as ImageIcon, Award, Type } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -42,7 +46,9 @@ const date = (s: string) => new Date(s).toLocaleString("fr-FR");
 function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+  const [tab, setTab] = useState("stats");
+  const tabs = [{v:"stats",l:"Statistiques",icon:LayoutDashboard},{v:"orders",l:"Commandes",icon:ShoppingBag},{v:"products",l:"Produits",icon:Package},{v:"reviews",l:"Avis clients",icon:Star},{v:"shipping",l:"Livraison",icon:Truck},{v:"messages",l:"Messages",icon:Mail},{v:"articles",l:"Articles",icon:FileText},{v:"texts",l:"Textes du site",icon:Type},{v:"photos",l:"Photos du site",icon:ImageIcon},{v:"awards",l:"Distinctions",icon:Award},{v:"team",l:"Équipe",icon:Users}];
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -54,16 +60,19 @@ function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (!session) return setIsAdmin(null);
-    supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" }).then(({ data, error }) => setIsAdmin(!error && data === true));
+    setRole(null);
+    if (!session) return;
+    let active = true;
+    Promise.all([supabase.rpc("has_role", { _user_id: session.user.id, _role: "admin" }), supabase.rpc("has_role", { _user_id: session.user.id, _role: "manager" })]).then(([a, m]) => { if (active) { setRole(a.data === true ? "admin" : m.data === true ? "manager" : "user"); setTab("stats"); } });
+    return () => { active = false; };
   }, [session?.user.id]);
 
   return (
-    <div className="min-h-screen bg-muted/40">
+    <div className="admin-shell min-h-screen bg-muted/40">
       <Toaster />
       <header className="border-b bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <a href="/" className="text-xl font-bold tracking-wide">MITINAN · Administration</a>
+          <a href="/" className="text-xl font-bold tracking-wide">MITINAN · {role === "manager" ? "Gestion boutique" : "Administration"}</a>
           {session && (
             <Button variant="secondary" size="sm" onClick={() => supabase.auth.signOut()}>
               Se déconnecter
@@ -74,34 +83,22 @@ function AdminPage() {
       <main className="mx-auto max-w-6xl px-4 py-8">
         {!ready ? null : !session ? (
           <Login />
-        ) : isAdmin === null ? (
+        ) : role === null ? (
           <p>Vérification…</p>
-        ) : !isAdmin ? (
+        ) : role === "user" ? (
           <p className="rounded-md border bg-card p-6">Ce compte n’a pas accès à l’administration.</p>
         ) : (
-          <Tabs defaultValue="stats">
-            <TabsList className="mb-6 flex-wrap h-auto">
-              <TabsTrigger value="stats">Statistiques</TabsTrigger>
-              <TabsTrigger value="products">Produits</TabsTrigger>
-              <TabsTrigger value="articles">Articles</TabsTrigger>
-              <TabsTrigger value="texts">Textes du site</TabsTrigger>
-              <TabsTrigger value="photos">Photos du site</TabsTrigger>
-              <TabsTrigger value="awards">Distinctions</TabsTrigger>
-              <TabsTrigger value="reviews">Avis clients</TabsTrigger>
-              <TabsTrigger value="orders">Commandes</TabsTrigger>
-              <TabsTrigger value="shipping">Livraison</TabsTrigger>
-              <TabsTrigger value="messages">Messages</TabsTrigger>
-            </TabsList>
+          <Tabs value={tab} onValueChange={setTab}>
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b pb-4"><div><p className="text-sm text-muted-foreground">{role === 'manager' ? 'Espace manager' : 'Votre boutique'}</p><h1 className="text-2xl font-semibold">{tabs.find((t) => t.v === tab)?.l}</h1></div><a href="/" className="text-sm underline">Voir la boutique ↗</a></div>
+            <select aria-label="Section de gestion" className="mb-5 h-12 w-full rounded-md border bg-background px-3 sm:hidden" value={tab} onChange={(e) => setTab(e.target.value)}>{tabs.filter((t) => canOpenTab(role, t.v)).map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}</select>
+            <TabsList className="mb-6 h-auto flex-wrap justify-start gap-1">{tabs.filter((t) => canOpenTab(role, t.v)).map((t) => <TabsTrigger key={t.v} value={t.v} className="gap-2"><t.icon className="h-4 w-4" />{t.l}</TabsTrigger>)}</TabsList>
             <TabsContent value="stats"><Stats /></TabsContent>
             <TabsContent value="products"><Products /></TabsContent>
-            <TabsContent value="articles"><Articles /></TabsContent>
-            <TabsContent value="texts"><Texts /></TabsContent>
-            <TabsContent value="photos"><SitePhotos /></TabsContent>
-            <TabsContent value="awards"><Awards /></TabsContent>
             <TabsContent value="reviews"><Reviews /></TabsContent>
             <TabsContent value="orders"><Orders /></TabsContent>
             <TabsContent value="shipping"><Shipping /></TabsContent>
-            <TabsContent value="messages"><Messages /></TabsContent>
+            <TabsContent value="messages"><Messages readOnly={role === 'manager'} /></TabsContent>
+            {role === 'admin' && <><TabsContent value="articles"><Articles /></TabsContent><TabsContent value="texts"><Texts /></TabsContent><TabsContent value="photos"><SitePhotos /></TabsContent><TabsContent value="awards"><Awards /></TabsContent><TabsContent value="team"><Team /></TabsContent></>}
           </Tabs>
         )}
       </main>
@@ -428,6 +425,12 @@ function Orders() {
     const { error } = await supabase.from("orders").update({ status }).eq("id", id);
     if (error) toast.error(error.message); else load();
   }
+  async function remove(o: Order) {
+    if (!canDeleteOrder(o.status) || !confirm(`Supprimer définitivement la commande #MIT-${String(o.order_number).padStart(6, '0')} annulée ?`)) return;
+    const { data, error } = await supabase.from('orders').delete().eq('id', o.id).eq('status', 'annulée').select('id');
+    if (error || !data?.length) { toast.error('Suppression impossible : la commande doit être annulée.'); return; }
+    toast.success('Commande annulée supprimée'); load();
+  }
   if (!list.length) return <p className="text-muted-foreground">Aucune commande pour le moment.</p>;
   const shown = list.filter((o) => filter === "toutes" || (filter === "à traiter" ? ["nouvelle", "confirmée"].includes(o.status) : o.status === filter));
   return (
@@ -449,12 +452,13 @@ function Orders() {
             {o.status === "nouvelle" && <Button size="sm" onClick={() => setStatus(o.id, "confirmée")}>Confirmer</Button>}
             {o.status === "confirmée" && <Button size="sm" onClick={() => setStatus(o.id, "expédiée")}>Marquer comme envoyée</Button>}
             {o.status === "expédiée" && <Button size="sm" onClick={() => setStatus(o.id, "livrée")}>Marquer comme livrée</Button>}
-            <select className="h-9 rounded-md border bg-background px-2" value={o.status} onChange={(e) => setStatus(o.id, e.target.value)}>
+            <select aria-label={`Statut commande ${o.order_number}`} className="h-9 rounded-md border bg-background px-2" value={o.status} onChange={(e) => setStatus(o.id, e.target.value)}>
               {STATUSES.map((s) => <option key={s}>{s}</option>)}
             </select>
+            {canDeleteOrder(o.status) && <Button size="sm" variant="destructive" onClick={() => remove(o)}>Supprimer</Button>}
             </div>
           </div>
-          <p className="text-sm">{o.first_name} {o.last_name} · <a className="underline" href={`tel:${o.phone}`}>{o.phone}</a>{o.email && ` · ${o.email}`}</p>
+          <p className="text-sm">{o.first_name} {o.last_name} · <a className="underline" href={`tel:${o.phone}`}><bdi dir="ltr">{o.phone}</bdi></a>{o.email && ` · ${o.email}`}</p>
           <p className="text-sm text-muted-foreground">{o.destination === "international" ? <b>International (devis) · {o.country} · </b> : null}{o.address}, {o.commune}, {o.wilaya} · {date(o.created_at)}</p>
           <ul className="text-sm">
             {o.order_items.map((i) => <li key={i.id}>{i.quantity} × {i.product_name} ({money(i.unit_price)})</li>)}
@@ -466,7 +470,7 @@ function Orders() {
   );
 }
 
-function Messages() {
+function Messages({ readOnly = false }: { readOnly?: boolean }) {
   const [list, setList] = useState<Tables<"contact_messages">[]>([]);
   const load = () => supabase.from("contact_messages").select("*").order("created_at", { ascending: false }).then(({ data }) => setList(data ?? []));
   useEffect(() => { load(); }, []);
@@ -482,7 +486,7 @@ function Messages() {
         <div key={m.id} className="space-y-1 rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between gap-2">
             <p className="font-semibold">{m.name} · <a className="underline" href={`mailto:${m.email}`}>{m.email}</a></p>
-            <Button size="sm" variant="outline" onClick={() => remove(m.id)}>Supprimer</Button>
+            {!readOnly && <Button size="sm" variant="outline" onClick={() => remove(m.id)}>Supprimer</Button>}
           </div>
           <p className="text-xs text-muted-foreground">{date(m.created_at)}</p>
           <p className="whitespace-pre-wrap text-sm">{m.message}</p>
@@ -581,32 +585,43 @@ function Reviews() {
 }
 
 function Stats() {
-  type O = { id: string; total: number; status: string; wilaya: string; destination: string; created_at: string; order_items: { product_name: string; quantity: number; unit_price: number }[] };
+  type O = { id: string; total: number; shipping_fee: number; status: string; email: string; country: string; acquisition_source: string; wilaya: string; destination: string; created_at: string; order_items: { product_name: string; quantity: number; unit_price: number }[] };
   const [orders, setOrders] = useState<O[] | null>(null);
+  const [period, setPeriod] = useState(30);
   const [products, setProducts] = useState<Tables<"products">[]>([]);
   const [reviews, setReviews] = useState<Tables<"reviews">[]>([]);
   const [messages, setMessages] = useState(0);
   useEffect(() => {
-    supabase.from("orders").select("id,total,status,wilaya,destination,created_at,order_items(product_name,quantity,unit_price)").then(({ data }) => setOrders((data as O[]) ?? []));
+    async function loadOrders() {
+      const all: O[] = [];
+      for (let offset = 0; ; offset += 1000) {
+        const { data, error } = await supabase.from("orders").select("id,total,shipping_fee,status,email,country,acquisition_source,wilaya,destination,created_at,order_items(product_name,quantity,unit_price)").order('created_at', { ascending: false }).range(offset, offset + 999);
+        if (error) { toast.error('Statistiques indisponibles'); return; }
+        all.push(...(data as O[])); if (data.length < 1000) break;
+      }
+      setOrders(all);
+    }
+    void loadOrders();
     supabase.from("products").select("*").then(({ data }) => setProducts(data ?? []));
     supabase.from("reviews").select("*").then(({ data }) => setReviews(data ?? []));
     supabase.from("contact_messages").select("id", { count: "exact", head: true }).then(({ count }) => setMessages(count ?? 0));
   }, []);
   if (!orders) return <p className="text-muted-foreground">Chargement…</p>;
 
-  const valid = orders.filter((o) => o.status !== "annulée");
+  const selected = orders.filter((o) => Date.now() - new Date(o.created_at).getTime() < period * 864e5);
+  const valid = selected.filter((o) => o.status !== "annulée");
   const revenue = valid.reduce((s, o) => s + Number(o.total), 0);
-  const delivered = orders.filter((o) => o.status === "livrée").reduce((s, o) => s + Number(o.total), 0);
+  const delivered = selected.filter((o) => o.status === "livrée").reduce((s, o) => s + Number(o.total), 0);
   const since = (d: number) => valid.filter((o) => Date.now() - new Date(o.created_at).getTime() < d * 864e5);
   const m30 = since(30);
-  const byStatus = ["nouvelle", "confirmée", "expédiée", "livrée", "annulée"].map((s) => [s, orders.filter((o) => o.status === s).length] as const);
+  const byStatus = ["nouvelle", "confirmée", "expédiée", "livrée", "annulée"].map((s) => [s, selected.filter((o) => o.status === s).length] as const);
   const count = (keyOf: (o: O) => [string, number][]) => {
     const m = new Map<string, number>();
     valid.forEach((o) => keyOf(o).forEach(([k, n]) => m.set(k, (m.get(k) ?? 0) + n)));
     return [...m].sort((a, b) => b[1] - a[1]).slice(0, 8);
   };
   const topProducts = count((o) => o.order_items.map((i) => [i.product_name, i.quantity]));
-  const topWilayas = count((o) => [[o.destination === "international" ? "International" : o.wilaya, 1]]);
+  const topWilayas = count((o) => [[o.destination === "international" ? o.country || "International" : o.wilaya, 1]]);
   const approved = reviews.filter((r) => r.approved);
   const avg = approved.length ? approved.reduce((s, r) => s + r.rating, 0) / approved.length : 0;
   const lowStock = products.filter((p) => p.active && p.stock <= 5);
@@ -617,9 +632,11 @@ function Stats() {
     return { label: d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }), n: n.length, total: n.reduce((s, o) => s + Number(o.total), 0) };
   });
   const maxDay = Math.max(1, ...days.map((d) => d.total));
+  const customerSources = count((o) => [[o.acquisition_source, 1]]);
+  const customers = new Map<string, number>(); valid.forEach((o) => customers.set(o.email.toLowerCase(), (customers.get(o.email.toLowerCase()) ?? 0) + 1));
 
   const Card = ({ t, v, s }: { t: string; v: string | number; s?: string }) => (
-    <div className="rounded-lg border bg-card p-4"><p className="text-sm text-muted-foreground">{t}</p><p className="mt-1 text-2xl font-bold">{v}</p>{s && <p className="text-xs text-muted-foreground">{s}</p>}</div>
+    <div className="rounded-lg border bg-card p-4"><p className="text-sm text-muted-foreground">{t}</p><p className="mt-1 text-xl font-bold sm:text-2xl">{v}</p>{s && <p className="text-xs text-muted-foreground">{s}</p>}</div>
   );
   const List = ({ title, rows, empty }: { title: string; rows: readonly (readonly [string, number])[]; empty: string }) => {
     const max = Math.max(1, ...rows.map((r) => r[1]));
@@ -635,31 +652,36 @@ function Stats() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card t="Chiffre d’affaires (hors annulées)" v={money(revenue)} s={`dont livré : ${money(delivered)}`} />
-        <Card t="Commandes" v={orders.length} s={`${m30.length} sur les 30 derniers jours`} />
+      <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-semibold">Vue d’ensemble</h2><select aria-label="Période des statistiques" className="h-11 rounded-md border bg-background px-3" value={period} onChange={(e) => setPeriod(Number(e.target.value))}><option value={7}>7 derniers jours</option><option value={30}>30 derniers jours</option><option value={90}>90 derniers jours</option><option value={365}>12 derniers mois</option></select></div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card t="Valeur des commandes" v={money(revenue)} s={`hors annulées · livré : ${money(delivered)}`} />
+        <Card t="Commandes" v={selected.length} s={`${selected.filter((o) => o.status === "annulée").length} annulées`} />
         <Card t="Panier moyen" v={money(valid.length ? Math.round(revenue / valid.length) : 0)} />
         <Card t="À traiter" v={orders.filter((o) => o.status === "nouvelle" || o.status === "confirmée").length} s="nouvelles + confirmées" />
         <Card t="Produits en vente" v={`${products.filter((p) => p.active).length} / ${products.length}`} />
         <Card t="Note moyenne des avis" v={approved.length ? `${avg.toFixed(1)} / 5` : "—"} s={`${approved.length} publiés · ${reviews.length - approved.length} en attente`} />
         <Card t="Messages reçus" v={messages} />
-        <Card t="CA 30 derniers jours" v={money(m30.reduce((s, o) => s + Number(o.total), 0))} />
+        <Card t="Ventes produits" v={money(valid.reduce((s, o) => s + Number(o.total) - Number(o.shipping_fee), 0))} s="hors frais de livraison" />
+        <Card t="Clients" v={customers.size} s={`${[...customers.values()].filter((n) => n > 1).length} clients récurrents`} />
+        <Card t="Frais de livraison" v={money(valid.reduce((s, o) => s + Number(o.shipping_fee), 0))} />
       </div>
       <div className="rounded-lg border bg-card p-4">
         <h3 className="mb-3 font-semibold">Ventes des 14 derniers jours</h3>
-        <div className="flex h-40 items-end gap-1">
+        <div className="overflow-x-auto"><div className="flex h-40 min-w-[460px] items-end gap-1">
           {days.map((d) => (
             <div key={d.label} className="flex flex-1 flex-col items-center gap-1" title={`${d.n} commande(s) · ${money(d.total)}`}>
               <div className="w-full rounded-t bg-primary" style={{ height: `${(d.total / maxDay) * 120}px`, minHeight: d.total ? 4 : 1 }} />
               <span className="text-[10px] text-muted-foreground">{d.label}</span>
             </div>
           ))}
-        </div>
+        </div></div>
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <Traffic days={period} />
+      <div className="grid gap-4 md:grid-cols-2">
         <List title="Produits les plus vendus (quantité)" rows={topProducts} empty="Aucune vente" />
-        <List title="Wilayas les plus actives" rows={topWilayas} empty="Aucune commande" />
+        <List title="Origine des clients (wilayas / pays)" rows={topWilayas} empty="Aucune commande" />
         <List title="Commandes par statut" rows={byStatus} empty="—" />
+        <List title="Sources des commandes" rows={customerSources} empty="Aucune commande" />
       </div>
       {lowStock.length > 0 && (
         <div className="rounded-lg border border-destructive bg-card p-4"><h3 className="mb-2 font-semibold text-destructive">Stock faible (≤ 5)</h3>

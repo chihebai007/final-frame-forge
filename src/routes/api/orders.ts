@@ -15,6 +15,7 @@ const schema = z
     address: z.string().trim().min(3).max(500),
     delivery_type: z.enum(["domicile", "bureau"]).default("domicile"),
     website: z.string().optional(),
+    acquisition_source: z.string().trim().max(100).optional().default('Non renseignée'),
     items: z
       .array(z.object({ product_id: z.string().uuid(), quantity: z.number().int().min(1).max(100) }))
       .min(1, "Panier vide")

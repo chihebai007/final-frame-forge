@@ -1,0 +1,24 @@
+CREATE POLICY "admin read roles" ON public.user_roles FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY "manager products" ON public.products FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'manager')) WITH CHECK (public.has_role(auth.uid(), 'manager'));
+CREATE POLICY "manager orders read" ON public.orders FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'manager'));
+CREATE POLICY "manager orders update" ON public.orders FOR UPDATE TO authenticated USING (public.has_role(auth.uid(), 'manager')) WITH CHECK (public.has_role(auth.uid(), 'manager'));
+CREATE POLICY "manager orders delete cancelled" ON public.orders FOR DELETE TO authenticated USING (status = 'annulée' AND public.has_role(auth.uid(), 'manager'));
+CREATE POLICY "manager order items read" ON public.order_items FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'manager'));
+CREATE POLICY "manager reviews" ON public.reviews FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'manager')) WITH CHECK (public.has_role(auth.uid(), 'manager'));
+CREATE POLICY "manager shipping" ON public.shipping_rates FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'manager')) WITH CHECK (public.has_role(auth.uid(), 'manager'));
+CREATE POLICY "manager shipping company" ON public.site_texts FOR UPDATE TO authenticated USING (key = 'shipping_company' AND public.has_role(auth.uid(), 'manager')) WITH CHECK (key = 'shipping_company' AND public.has_role(auth.uid(), 'manager'));
+CREATE POLICY "manager shop messages" ON public.contact_messages FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'manager'));
+CREATE OR REPLACE FUNCTION public.only_delete_cancelled_order() RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$ BEGIN IF OLD.status <> 'annulée' THEN RAISE EXCEPTION 'Seules les commandes annulées peuvent être supprimées.'; END IF; RETURN OLD; END $$;
+CREATE TRIGGER orders_delete_cancelled_only BEFORE DELETE ON public.orders FOR EACH ROW EXECUTE FUNCTION public.only_delete_cancelled_order();
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS acquisition_source text NOT NULL DEFAULT 'Non renseignée';
+CREATE TABLE public.visit_daily (day date NOT NULL DEFAULT CURRENT_DATE, source text NOT NULL, country text NOT NULL DEFAULT 'Inconnu', device text NOT NULL, language text NOT NULL, visits integer NOT NULL DEFAULT 1 CHECK (visits > 0), PRIMARY KEY (day, source, country, device, language));
+GRANT SELECT ON public.visit_daily TO authenticated;
+GRANT ALL ON public.visit_daily TO service_role;
+ALTER TABLE public.visit_daily ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "shop staff read traffic" ON public.visit_daily FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'manager'));
+CREATE OR REPLACE FUNCTION public.record_shop_visit(p_source text, p_country text, p_device text, p_language text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$ BEGIN
+IF length(p_source) > 100 OR length(p_country) > 20 OR p_device NOT IN ('Téléphone', 'Ordinateur', 'Tablette') OR p_language NOT IN ('fr', 'en', 'ar') THEN RAISE EXCEPTION 'Visite invalide'; END IF;
+INSERT INTO public.visit_daily (source,country,device,language) VALUES (p_source,p_country,p_device,p_language) ON CONFLICT (day,source,country,device,language) DO UPDATE SET visits = LEAST(visit_daily.visits + 1, 1000000);
+END $$;
+REVOKE ALL ON FUNCTION public.record_shop_visit(text,text,text,text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.record_shop_visit(text,text,text,text) TO service_role;

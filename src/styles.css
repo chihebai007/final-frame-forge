@@ -142,3 +142,27 @@
     color: var(--color-foreground);
   }
 }
+
+.admin-shell { overflow-wrap: anywhere; }
+.admin-shell main, .admin-shell [role=tabpanel] { min-width: 0; }
+.admin-shell button { min-height: 40px; }
+.admin-shell input, .admin-shell textarea, .admin-shell select { min-width: 0; }
+.traffic-progress { height: 6px; accent-color: var(--chart-2); }
+.traffic-progress::-webkit-progress-bar { background: var(--muted); }
+.traffic-progress::-webkit-progress-value { background: var(--chart-2); }
+@media (max-width: 640px) {
+  .admin-shell header a { font-size: 17px; }
+  .admin-shell main { padding: 20px 12px; }
+  .admin-shell input, .admin-shell textarea, .admin-shell select { font-size: 16px; }
+  .admin-shell form { padding: 16px; }
+  .admin-shell .min-w-48 { min-width: 0; flex-basis: 60%; }
+  .admin-shell [role=tabpanel] button { white-space: normal; height: auto; }
+  .admin-shell [role=tablist] { display: none; }
+  .shipping-table, .shipping-table tbody { display: block; }
+  .shipping-table thead { display: none; }
+  .shipping-table tr { display: grid; grid-template-columns: 1fr 1fr; padding: 12px; gap: 10px; }
+  .shipping-table td { display: flex; flex-direction: column; gap: 6px; padding: 0; }
+  .shipping-table td:first-child { grid-column: 1 / -1; font-weight: 600; }
+  .shipping-table td:not(:first-child)::before { content: attr(data-label); font-size: 12px; color: var(--muted-foreground); }
+  .shipping-table input { width: 100%; }
+}
