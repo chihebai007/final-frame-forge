@@ -4,3 +4,4 @@
 - [x] Enrichir les statistiques avec les sources de visites et l’origine des clients.
 - [x] Ajouter un accès manager limité à la boutique, contrôlé par l’admin.
 - [x] Autoriser et tester la suppression uniquement des commandes annulées.
+- [x] Dans « Notre histoire », garder la photo à gauche et le texte à droite dans les trois langues.
