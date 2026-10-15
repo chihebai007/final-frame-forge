@@ -35,3 +35,6 @@ html{scroll-padding-top:80px}img{max-width:100%}input[type=tel]{direction:ltr;te
 @media(max-width:650px){body.menu-open nav{top:62px}.order-top{display:none}.langs button{padding:4px}.hero:before{opacity:.35}.hero-overlay{background:linear-gradient(180deg,rgba(5,20,31,.92) 0%,rgba(5,20,31,.85) 60%,rgba(5,20,31,.6) 100%)}.hero-content{padding:50px 22px 60px}.hero-bottle{display:none}.hero{min-height:auto}.two{grid-template-columns:1fr}[dir=rtl] .hero-content{padding:50px 22px 60px}}
 .old-price{opacity:.6;font-size:.8em;font-weight:400;margin-inline-end:.35em}
 .discount-badge{display:inline-block;background:#b3261e;color:#fff;font-size:.7em;font-weight:700;padding:.15em .5em;border-radius:999px;margin-inline-start:.35em;vertical-align:middle}
+/* ---- Notre histoire : photo toujours à gauche, texte à droite ---- */
+.story{direction:ltr}
+html[dir=rtl] .story-text{direction:rtl}
