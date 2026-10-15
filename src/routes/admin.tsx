@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +15,7 @@ import { Shipping } from "@/components/admin/Shipping";
 import { Team } from "@/components/admin/Team";
 import { Traffic } from "@/components/admin/Traffic";
 import { canDeleteOrder, canOpenTab } from "@/lib/shop-access";
-import { LayoutDashboard, Package, ShoppingBag, Users, Star, Truck, Mail, FileText, Image as ImageIcon, Award, Type } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, Star, Truck, Mail, FileText, Image as ImageIcon, Award, Type, ImagePlus, X } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -158,37 +158,35 @@ async function fileToDataUrl(file: File): Promise<string> {
 }
 
 function ImagePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const custom = value && !(IMAGES as readonly string[]).includes(value) ? value : "";
+  const fileInput = useRef<HTMLInputElement>(null);
   async function upload(f?: File): Promise<void> {
     if (!f) return;
     if (!f.type.startsWith("image/")) { toast.error("Choisissez un fichier image"); return; }
     try { onChange(await fileToDataUrl(f)); toast.success("Image ajoutée"); }
     catch { toast.error("Impossible de lire cette image"); }
   }
-  const Thumb = ({ src }: { src: string }) => (
-    <div className="relative h-16 w-16">
-      <Button type="button" variant="ghost" aria-label="Sélectionner cette image" onClick={() => onChange(src)}
-        className={`h-full w-full overflow-hidden rounded border-2 p-0 ${value === src ? "border-primary" : "border-transparent"}`}>
-        <img src={src} alt="" className="h-full w-full object-cover" />
-      </Button>
-      {value === src && (
-        <Button type="button" variant="destructive" aria-label="Retirer l’image" onClick={() => onChange("")}
-          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs font-bold shadow">×</Button>
-      )}
-    </div>
-  );
   return (
     <div className="space-y-2">
       <Label>Image</Label>
-      <div className="flex flex-wrap gap-3 pt-2">
-        {custom && <Thumb src={custom} />}
-        {IMAGES.map((src) => <Thumb key={src} src={src} />)}
-      </div>
+      {value && <div className="relative mt-2 h-24 w-24">
+        <img src={value} alt="Image sélectionnée" className="h-full w-full rounded-md border object-cover" />
+        <Button type="button" variant="destructive" size="icon" title="Retirer l’image" aria-label="Retirer l’image" onClick={() => onChange("")}
+          className="image-remove absolute -right-2 -top-2 rounded-full shadow-sm"><X /></Button>
+      </div>}
+      <details className="text-sm">
+        <summary className="cursor-pointer py-2 text-muted-foreground">Choisir une image existante</summary>
+        <div className="flex flex-wrap gap-3 py-2">{IMAGES.map((src, index) =>
+          <Button key={src} type="button" variant="ghost" aria-label={`Sélectionner l’image ${index + 1}`} onClick={() => onChange(src)}
+            className={`h-16 w-16 overflow-hidden rounded-md border-2 p-0 ${value === src ? "border-primary" : "border-transparent"}`}>
+            <img src={src} alt="" className="h-full w-full object-cover" />
+          </Button>)}
+        </div>
+      </details>
       <div className="flex flex-wrap items-center gap-2">
-        <label className="inline-flex h-9 cursor-pointer items-center rounded-md border bg-background px-3 text-sm hover:bg-accent">
-          📷 Ajouter une image depuis mon appareil
-          <input type="file" accept="image/*" className="hidden" onChange={(e) => { upload(e.target.files?.[0]); e.target.value = ""; }} />
-        </label>
+        <Button type="button" onClick={() => fileInput.current?.click()} className="h-auto min-h-10 max-w-full py-2 text-left whitespace-normal">
+          <ImagePlus /> Ajouter une image depuis mon appareil
+        </Button>
+        <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={(e) => { upload(e.target.files?.[0]); e.target.value = ""; }} />
         {!value && <span className="text-sm text-muted-foreground">Aucune image sélectionnée</span>}
       </div>
       <Input placeholder="ou collez un lien d’image (https://…)" value={value.startsWith("data:") ? "" : value} onChange={(e) => onChange(e.target.value)} />
@@ -285,7 +283,7 @@ function Products() {
       <Button onClick={() => setEdit({ ...emptyProduct, sort_order: list.length + 1 })}>+ Ajouter un produit</Button>
       {list.map((p) => (
         <div key={p.id} className="flex flex-wrap items-center gap-4 rounded-lg border bg-card p-4">
-          <img src={p.image_url} alt="" className="h-16 w-16 rounded object-cover" />
+          {p.image_url && <img src={p.image_url} alt="" className="h-16 w-16 rounded object-cover" />}
           <div className="min-w-48 flex-1">
             <p className="font-semibold">{p.name}</p>
             <p className="text-sm text-muted-foreground">{p.sale_price ? <><s>{money(p.price)}</s> <b className="text-destructive">{money(p.sale_price)} (−{Math.round((1 - p.sale_price / p.price) * 100)} %)</b></> : money(p.price)} · {p.size} · stock {p.stock}</p>
@@ -340,7 +338,7 @@ function Articles() {
       <Button onClick={() => setEdit({ title: "", excerpt: "", image_url: IMAGES[1], published: true })}>+ Ajouter un article</Button>
       {list.map((a) => (
         <div key={a.id} className="flex flex-wrap items-center gap-4 rounded-lg border bg-card p-4">
-          <img src={a.image_url} alt="" className="h-16 w-16 rounded object-cover" />
+          {a.image_url && <img src={a.image_url} alt="" className="h-16 w-16 rounded object-cover" />}
           <div className="min-w-48 flex-1"><p className="font-semibold">{a.title}</p><p className="line-clamp-1 text-sm text-muted-foreground">{a.excerpt}</p></div>
           <span className="text-xs text-muted-foreground">{a.published ? "Publié" : "Brouillon"}</span>
           <Button size="sm" variant="outline" onClick={() => setEdit(a)}>Modifier</Button>
@@ -552,7 +550,7 @@ function Awards() {
       {!list.length && <p className="text-muted-foreground">Aucune distinction pour le moment.</p>}
       {list.map((a) => (
         <div key={a.id} className="flex flex-wrap items-center gap-4 rounded-lg border bg-card p-4">
-          {a.image_url ? <img src={a.image_url} alt="" className="h-16 w-16 rounded object-cover" /> : <div className="grid h-16 w-16 place-items-center text-3xl">🏅</div>}
+          {a.image_url && <img src={a.image_url} alt="" className="h-16 w-16 rounded object-cover" />}
           <div className="min-w-48 flex-1"><p className="font-semibold">{a.title}</p><p className="text-sm text-muted-foreground">{a.year}</p></div>
           <span className="text-xs text-muted-foreground">{a.published ? "Affichée" : "Masquée"}</span>
           <Button size="sm" variant="outline" onClick={() => setEdit(a)}>Modifier</Button>

@@ -145,7 +145,11 @@
 
 .admin-shell { overflow-wrap: anywhere; }
 .admin-shell main, .admin-shell [role=tabpanel] { min-width: 0; }
-.admin-shell button { min-height: 40px; }
+.admin-shell button:not([role="switch"]):not(.image-remove) { min-height: 40px; }
+.admin-shell [role="switch"] { height: 24px; width: 44px; min-height: 24px; padding: 0; }
+.admin-shell [role="switch"] > span { height: 20px; width: 20px; }
+.admin-shell [role="switch"] > span[data-state="checked"] { transform: translateX(20px); }
+.admin-shell .image-remove { height: 28px; width: 28px; min-height: 28px; padding: 0; }
 .admin-shell input, .admin-shell textarea, .admin-shell select { min-width: 0; }
 .traffic-progress { height: 6px; accent-color: var(--chart-2); }
 .traffic-progress::-webkit-progress-bar { background: var(--muted); }
@@ -156,7 +160,7 @@
   .admin-shell input, .admin-shell textarea, .admin-shell select { font-size: 16px; }
   .admin-shell form { padding: 16px; }
   .admin-shell .min-w-48 { min-width: 0; flex-basis: 60%; }
-  .admin-shell [role=tabpanel] button { white-space: normal; height: auto; }
+  .admin-shell [role=tabpanel] button:not([role="switch"]):not(.image-remove) { white-space: normal; }
   .admin-shell [role=tablist] { display: none; }
   .shipping-table, .shipping-table tbody { display: block; }
   .shipping-table thead { display: none; }

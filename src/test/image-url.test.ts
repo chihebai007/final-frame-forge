@@ -4,6 +4,9 @@ import "../../public/image-url.js";
 const images = (globalThis as unknown as { MitinanImages: { safeImageUrl: (v: string) => string } }).MitinanImages;
 
 describe("Admin image URLs", () => {
+  it("keeps a removed photo empty instead of restoring a default", () => {
+    expect(images.safeImageUrl("")).toBe("");
+  });
   it("accepts photos uploaded from the device", () => {
     const photo = "data:image/jpeg;base64,/9j/AA==";
     expect(images.safeImageUrl(photo)).toBe(photo);

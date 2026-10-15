@@ -2,7 +2,6 @@
   "use strict";
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => document.querySelectorAll(s);
-  const FALLBACK_IMG = "/images/IMG-20260706-WA0064.jpg";
   const LOAD_TIME = Date.now();
   function acquisitionSource() {
     let source = 'Accès direct';
@@ -91,7 +90,8 @@
 
   const money = (n) => new Intl.NumberFormat("fr-DZ").format(Number(n) || 0) + (lang === "ar" ? " دج" : " DA");
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
-  const safeUrl = (u) => globalThis.MitinanImages.safeImageUrl(u) || FALLBACK_IMG;
+  const safeUrl = (u) => globalThis.MitinanImages.safeImageUrl(u);
+  const photo = (url, alt = "") => safeUrl(url) ? `<img src="${esc(safeUrl(url))}" alt="${esc(alt)}" loading="lazy">` : "";
   const stars = (r) => "★★★★★".slice(0, Math.round(r)) + "☆☆☆☆☆".slice(0, 5 - Math.round(r));
   const orderNo = (n) => "MIT-" + String(n).padStart(6, "0");
 
@@ -179,7 +179,7 @@
       const rv = productReviews(p.id);
       const avg = rv.length ? rv.reduce((s, r) => s + r.rating, 0) / rv.length : 0;
       return `<article class="product-card">
-  <div class="photo"><img src="${esc(safeUrl(p.image_url))}" alt="${esc(pName(p))}" loading="lazy"></div>
+  ${safeUrl(p.image_url) ? `<div class="photo">${photo(p.image_url, pName(p))}</div>` : ""}
   <div class="body"><h3>${esc(pName(p))}</h3><div class="size">${esc(p.size)}</div>
   <button type="button" class="rating" data-reviews="${esc(p.id)}">${rv.length ? `<span class="stars">${stars(avg)}</span> ${avg.toFixed(1)} · ${rv.length} ${esc(tr("reviews"))}` : `<span class="stars dim">☆☆☆☆☆</span> ${esc(tr("no_review"))}`}</button>
   <p>${esc(pDesc(p))}</p><div class="stock">${esc(p.stock > 0 ? tr("in_stock") : tr("out"))}</div><div class="price">${p.old_price ? `<s class="old-price">${money(p.old_price)}</s> ${money(p.price)} <span class="discount-badge">-${p.discount}%</span>` : money(p.price)}</div>
@@ -193,12 +193,12 @@
   async function loadAwards() { try { awards = await getJSON("/api/awards"); } catch { awards = []; } renderAwards(); }
   function renderAwards() {
     if (!awards) return;
-    $("#awardGrid").innerHTML = awards.map((a) => `<article class="award-card">${a.image_url ? `<img src="${esc(safeUrl(a.image_url))}" alt="${esc(a.title)}" loading="lazy">` : `<div class="medal">🏅</div>`}<div class="body">${a.year ? `<small>${esc(a.year)}</small>` : ""}<h3>${esc(a.title)}</h3><p>${esc(a.description)}</p></div></article>`).join("") || `<p class="empty">${esc(tr("no_awards"))}</p>`;
+    $("#awardGrid").innerHTML = awards.map((a) => `<article class="award-card">${photo(a.image_url, a.title)}<div class="body">${a.year ? `<small>${esc(a.year)}</small>` : ""}<h3>${esc(a.title)}</h3><p>${esc(a.description)}</p></div></article>`).join("") || `<p class="empty">${esc(tr("no_awards"))}</p>`;
   }
   async function loadArticles() { try { articles = await getJSON("/api/articles"); } catch { articles = []; } renderArticles(); }
   function renderArticles() {
     if (!articles) return;
-    $("#articleGrid").innerHTML = articles.map((x) => `<article class="article-card"><img src="${esc(x.image_url ? safeUrl(x.image_url) : "/images/IMG-20260706-WA0062.jpg")}" alt="${esc(x.title)}" loading="lazy"><div class="body"><small>MITINAN</small><h3>${esc(x.title)}</h3><p>${esc(x.excerpt)}</p></div></article>`).join("") || "<p>" + esc(tr("no_articles")) + "</p>";
+    $("#articleGrid").innerHTML = articles.map((x) => `<article class="article-card">${photo(x.image_url, x.title)}<div class="body"><small>MITINAN</small><h3>${esc(x.title)}</h3><p>${esc(x.excerpt)}</p></div></article>`).join("") || "<p>" + esc(tr("no_articles")) + "</p>";
   }
 
   // ---------- Panier ----------
@@ -236,7 +236,7 @@
   }
   function renderCart() {
     const { lines, total } = cartLines();
-    $("#cartItems").innerHTML = lines.map(({ p, q }) => `<div class="cart-row"><img src="${esc(safeUrl(p.image_url))}" alt=""><div><b>${esc(pName(p))}</b><div>${esc(p.size)} · ${money(p.price)}</div></div><div class="qty"><button type="button" data-qty="-1" data-id="${esc(p.id)}" aria-label="-">−</button> ${q} <button type="button" data-qty="1" data-id="${esc(p.id)}" aria-label="+">+</button></div></div>`).join("") || "<p>" + esc(tr("empty_cart")) + "</p>";
+    $("#cartItems").innerHTML = lines.map(({ p, q }) => `<div class="cart-row">${photo(p.image_url)}<div><b>${esc(pName(p))}</b><div>${esc(p.size)} · ${money(p.price)}</div></div><div class="qty"><button type="button" data-qty="-1" data-id="${esc(p.id)}" aria-label="-">−</button> ${q} <button type="button" data-qty="1" data-id="${esc(p.id)}" aria-label="+">+</button></div></div>`).join("") || "<p>" + esc(tr("empty_cart")) + "</p>";
     $("#cartTotal").textContent = money(total);
   }
   function changeQty(id, d) {
