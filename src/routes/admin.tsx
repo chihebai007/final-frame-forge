@@ -159,6 +159,21 @@ async function fileToDataUrl(file: File): Promise<string> {
 
 function ImagePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const fileInput = useRef<HTMLInputElement>(null);
+  const [hidden, setHidden] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("mitinan_hidden_images") ?? "[]") as string[]; } catch { return []; }
+  });
+  const hidePreset = (src: string): void => {
+    const next = hidden.includes(src) ? hidden : [...hidden, src];
+    setHidden(next);
+    try { localStorage.setItem("mitinan_hidden_images", JSON.stringify(next)); } catch { /* stockage indisponible */ }
+    toast.success("Image retirée de la bibliothèque");
+  };
+  const restorePresets = (): void => {
+    setHidden([]);
+    try { localStorage.removeItem("mitinan_hidden_images"); } catch { /* stockage indisponible */ }
+    toast.success("Bibliothèque d’images restaurée");
+  };
+  const presets = IMAGES.filter((src) => !hidden.includes(src));
   async function upload(f?: File): Promise<void> {
     if (!f) return;
     if (!f.type.startsWith("image/")) { toast.error("Choisissez un fichier image"); return; }
@@ -175,12 +190,20 @@ function ImagePicker({ value, onChange }: { value: string; onChange: (v: string)
       </div>}
       <details className="text-sm">
         <summary className="cursor-pointer py-2 text-muted-foreground">Choisir une image existante</summary>
-        <div className="flex flex-wrap gap-3 py-2">{IMAGES.map((src, index) =>
-          <Button key={src} type="button" variant="ghost" aria-label={`Sélectionner l’image ${index + 1}`} onClick={() => onChange(src)}
-            className={`h-16 w-16 overflow-hidden rounded-md border-2 p-0 ${value === src ? "border-primary" : "border-transparent"}`}>
-            <img src={src} alt="" className="h-full w-full object-cover" />
-          </Button>)}
+        <div className="flex flex-wrap gap-3 py-2">
+          {presets.map((src, index) =>
+            <div key={src} className="relative">
+              <Button type="button" variant="ghost" aria-label={`Sélectionner l’image ${index + 1}`} onClick={() => onChange(src)}
+                className={`h-16 w-16 overflow-hidden rounded-md border-2 p-0 ${value === src ? "border-primary" : "border-transparent"}`}>
+                <img src={src} alt="" className="h-full w-full object-cover" />
+              </Button>
+              <Button type="button" variant="destructive" size="icon" title="Retirer cette image de la bibliothèque"
+                aria-label={`Retirer l’image ${index + 1} de la bibliothèque`} onClick={() => hidePreset(src)}
+                className="image-remove absolute -right-2 -top-2 rounded-full shadow-sm"><X /></Button>
+            </div>)}
+          {presets.length === 0 && <p className="py-2 text-muted-foreground">Aucune image dans la bibliothèque.</p>}
         </div>
+        {hidden.length > 0 && <button type="button" className="text-sm text-muted-foreground underline" onClick={restorePresets}>Restaurer les images retirées</button>}
       </details>
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" onClick={() => fileInput.current?.click()} className="h-auto min-h-10 max-w-full py-2 text-left whitespace-normal">
