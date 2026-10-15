@@ -1,0 +1,2 @@
+ALTER TABLE public.products ADD COLUMN sale_price numeric NULL;
+ALTER TABLE public.products ADD CONSTRAINT products_sale_price_valid CHECK (sale_price IS NULL OR (sale_price > 0 AND sale_price < price)) NOT VALID;

@@ -220,6 +220,7 @@ export type Database = {
           name_ar: string
           name_en: string
           price: number
+          sale_price: number | null
           size: string
           sort_order: number
           stock: number
@@ -238,6 +239,7 @@ export type Database = {
           name_ar?: string
           name_en?: string
           price?: number
+          sale_price?: number | null
           size?: string
           sort_order?: number
           stock?: number
@@ -256,6 +258,7 @@ export type Database = {
           name_ar?: string
           name_en?: string
           price?: number
+          sale_price?: number | null
           size?: string
           sort_order?: number
           stock?: number
