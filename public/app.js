@@ -151,7 +151,11 @@
   async function loadProducts() {
     try {
       const [p, r] = await Promise.all([getJSON("/api/products"), getJSON("/api/reviews").catch(() => [])]);
-      products = p; reviews = r;
+      products = p.map((x) => {
+        const base = Number(x.price), sale = Number(x.sale_price);
+        return sale > 0 && sale < base ? { ...x, price: sale, old_price: base, discount: Math.round((1 - sale / base) * 100) } : { ...x, price: base };
+      });
+      reviews = r;
     } catch (e) {
       console.warn(e);
       $("#productGrid").innerHTML = "<p>" + esc(tr("err")) + "</p>";
@@ -178,7 +182,7 @@
   <div class="photo"><img src="${esc(safeUrl(p.image_url))}" alt="${esc(pName(p))}" loading="lazy"></div>
   <div class="body"><h3>${esc(pName(p))}</h3><div class="size">${esc(p.size)}</div>
   <button type="button" class="rating" data-reviews="${esc(p.id)}">${rv.length ? `<span class="stars">${stars(avg)}</span> ${avg.toFixed(1)} · ${rv.length} ${esc(tr("reviews"))}` : `<span class="stars dim">☆☆☆☆☆</span> ${esc(tr("no_review"))}`}</button>
-  <p>${esc(pDesc(p))}</p><div class="stock">${esc(p.stock > 0 ? tr("in_stock") : tr("out"))}</div><div class="price">${money(p.price)}</div>
+  <p>${esc(pDesc(p))}</p><div class="stock">${esc(p.stock > 0 ? tr("in_stock") : tr("out"))}</div><div class="price">${p.old_price ? `<s class="old-price">${money(p.old_price)}</s> ${money(p.price)} <span class="discount-badge">-${p.discount}%</span>` : money(p.price)}</div>
   <div class="card-actions"><button type="button" class="btn gold" data-buy="${esc(p.id)}" ${p.stock < 1 ? "disabled" : ""}>${esc(tr("buy"))}</button><button type="button" class="btn outline" data-add="${esc(p.id)}" ${p.stock < 1 ? "disabled" : ""}>${esc(tr("add"))}</button></div></div>
 </article>`;
     }).join("") || "<p>" + esc(tr("no_products")) + "</p>";
