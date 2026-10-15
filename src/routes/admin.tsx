@@ -225,7 +225,9 @@ function Products() {
     e.preventDefault();
     if (!edit) return;
     const { id, created_at: _c, updated_at: _u, ...row } = edit as Product;
-    const payload = { ...row, name: row.name.trim(), price: Number(row.price), stock: Math.max(0, Math.floor(Number(row.stock))) };
+    const sale = row.sale_price == null || Number(row.sale_price) <= 0 ? null : Number(row.sale_price);
+    if (sale !== null && sale >= Number(row.price)) return toast.error("Le prix promo doit être inférieur au prix normal.");
+    const payload = { ...row, name: row.name.trim(), price: Number(row.price), sale_price: sale, stock: Math.max(0, Math.floor(Number(row.stock))) };
     const { error } = id ? await supabase.from("products").update(payload).eq("id", id) : await supabase.from("products").insert(payload);
     if (error) return toast.error(error.message);
     toast.success("Produit enregistré");
@@ -260,6 +262,18 @@ function Products() {
         <div className="space-y-2"><Label>Contenance</Label><Input value={edit.size ?? ""} onChange={(e) => setEdit({ ...edit, size: e.target.value })} /></div>
         <CategoryField value={edit.category ?? ""} onChange={(v) => setEdit({ ...edit, category: v })} />
       </div>
+      <div className="space-y-3 rounded-md border border-dashed p-4">
+        <div className="flex items-center gap-2">
+          <Switch checked={edit.sale_price != null} onCheckedChange={(v) => setEdit({ ...edit, sale_price: v ? Math.round(Number(edit.price || 0) * 0.9) : null })} />
+          <Label>Mettre en promotion</Label>
+        </div>
+        {edit.sale_price != null && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2"><Label>Réduction (%)</Label><Input type="number" min={1} max={99} value={edit.price ? Math.round((1 - Number(edit.sale_price) / Number(edit.price)) * 100) : 0} onChange={(e) => setEdit({ ...edit, sale_price: Math.round(Number(edit.price || 0) * (1 - Number(e.target.value) / 100)) })} /></div>
+            <div className="space-y-2"><Label>Nouveau prix promo (DA)</Label><Input type="number" min={1} step="1" required value={edit.sale_price ?? 0} onChange={(e) => setEdit({ ...edit, sale_price: Number(e.target.value) })} /></div>
+          </div>
+        )}
+      </div>
       <ImagePicker value={edit.image_url ?? ""} onChange={(v) => setEdit({ ...edit, image_url: v })} />
       <div className="flex items-center gap-2"><Switch checked={!!edit.active} onCheckedChange={(v) => setEdit({ ...edit, active: v })} /><Label>En vente sur le site</Label></div>
       <div className="flex gap-2"><Button>Enregistrer</Button><Button type="button" variant="outline" onClick={() => setEdit(null)}>Annuler</Button></div>
@@ -274,7 +288,7 @@ function Products() {
           <img src={p.image_url} alt="" className="h-16 w-16 rounded object-cover" />
           <div className="min-w-48 flex-1">
             <p className="font-semibold">{p.name}</p>
-            <p className="text-sm text-muted-foreground">{money(p.price)} · {p.size} · stock {p.stock}</p>
+            <p className="text-sm text-muted-foreground">{p.sale_price ? <><s>{money(p.price)}</s> <b className="text-destructive">{money(p.sale_price)} (−{Math.round((1 - p.sale_price / p.price) * 100)} %)</b></> : money(p.price)} · {p.size} · stock {p.stock}</p>
           </div>
           <span className={`rounded px-2 py-1 text-xs ${p.active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{p.active ? "En vente" : "Retiré"}</span>
           <Button size="sm" variant="outline" onClick={() => setEdit(p)}>Modifier</Button>

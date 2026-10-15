@@ -51,7 +51,7 @@ export const Route = createFileRoute("/api/orders")({
         const ids = [...new Set(items.map((i) => i.product_id))];
         const { data: products, error } = await supabaseAdmin
           .from("products")
-          .select("id,name,price,stock,active")
+          .select("id,name,price,sale_price,stock,active")
           .in("id", ids);
         if (error) return json({ error: "Erreur serveur" }, 500);
 
@@ -64,8 +64,10 @@ export const Route = createFileRoute("/api/orders")({
           const p = products.find((x) => x.id === id);
           if (!p || !p.active) return json({ error: "Un produit du panier n’est plus disponible." }, 400);
           if (p.stock < q) return json({ error: `Stock insuffisant pour « ${p.name} » (reste ${p.stock}).` }, 400);
-          total += Number(p.price) * q;
-          lines.push({ product_id: id, product_name: p.name, quantity: q, unit_price: p.price, stock: p.stock });
+          const sale = Number(p.sale_price);
+          const unit = sale > 0 && sale < Number(p.price) ? sale : Number(p.price);
+          total += unit * q;
+          lines.push({ product_id: id, product_name: p.name, quantity: q, unit_price: unit, stock: p.stock });
         }
 
         // Delivery fee from the admin-managed rate table (wilaya value starts with its code, e.g. "10 - Bouira").
