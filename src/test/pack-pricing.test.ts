@@ -2,6 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { priceLine, changeCartOffer } from '../../public/pack-pricing.js';
 const product = {price:4500, sale_price:null, packs_enabled:true, quantity_offers:[{id:'two',quantity:2,price:8900,label:'Pack 2',enabled:true},{id:'three',quantity:3,price:13200,label:'Pack 3',enabled:true}]};
 describe('Customizable packs', () => {
+  it('keeps offers and quantities independent for each product', () => {
+    const cart = changeCartOffer([{product_id:'oil',quantity:1},{product_id:'virgin',quantity:3}],{...product,stock:20},0,'two');
+    expect(cart[0]).toEqual({product_id:'oil',quantity:2,offer_id:'two'});
+    expect(cart[1]).toEqual({product_id:'virgin',quantity:3});
+    expect(() => priceLine({...product,quantity_offers:[]},2,'two')).toThrow();
+  });
   it('charges the configured total for one or multiple packs', () => {expect(priceLine(product,2,'two').total).toBe(8900); expect(priceLine(product,6,'three').total).toBe(26400);});
   it('rejects hidden pack systems', () => {expect(() => priceLine({...product,packs_enabled:false},2,'two')).toThrow();});
   it('rejects individually hidden packs', () => {expect(() => priceLine({...product,quantity_offers:[{...product.quantity_offers[0],enabled:false}]},2,'two')).toThrow();});

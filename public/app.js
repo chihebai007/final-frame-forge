@@ -35,7 +35,7 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
   if (!["fr", "ar", "en"].includes(lang)) lang = "fr";
   let cart = [];
   const selectedOffers = new Map();
-  const packText = (key) => ({fr:{choose:'Choisissez votre offre',unit:'1 unité',pack:'Pack',saving:'de remise'},en:{choose:'Choose your offer',unit:'1 unit',pack:'Pack',saving:'discount'},ar:{choose:'اختر العرض',unit:'وحدة واحدة',pack:'حزمة',saving:'تخفيض'}}[lang][key]);
+  const packText = (key) => ({fr:{choose:'Choisissez votre offre',unit:'1 unité',units:'unités',pack:'Pack',saving:'de remise'},en:{choose:'Choose your offer',unit:'1 unit',units:'units',pack:'Pack',saving:'discount'},ar:{choose:'اختر العرض',unit:'وحدة واحدة',units:'وحدات',pack:'حزمة',saving:'تخفيض'}}[lang][key]);
   const pricingFor = (p,q,id) => priceLine({...p,price:p.base_price},q,id);
   const availableOffers = p => p.packs_enabled ? readOffers(p.quantity_offers).filter(o => o.enabled) : [];
   const offerLabel = o => (lang !== 'fr' && o['label_'+lang]) || o.label || `${packText('pack')} ${o.quantity}`;
@@ -282,13 +282,13 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
       const count = q / pricing.step;
       const otherQuantity = cart.filter((line, i) => i !== index && line.product_id === p.id).reduce((sum,line) => sum + line.quantity,0);
       const options = [{id:'',quantity:1,price:p.price,label:packText('unit')},...offers];
-      return `<fieldset class="quantity-offers checkout-offers"><legend>${esc(packText('choose'))} — ${esc(pName(p))}</legend>${options.map(o => {
+      return `<fieldset class="quantity-offers checkout-offers"><legend>${esc(pName(p))}${p.size ? ` · ${esc(p.size)}` : ''}<small class="checkout-offer-count">${esc(packText('choose'))}</small></legend>${options.map(o => {
         const badge = (lang !== 'fr' && o['badge_'+lang]) || o.badge || '';
         const units = count * o.quantity;
         const total = o.price * count;
         const saving = Math.max(0,p.price*units-total);
         const disabled = otherQuantity + units > Math.min(p.stock,100);
-        return `<label class="offer-choice"><input type="radio" name="checkout-offer-${index}" data-checkout-line="${index}" value="${esc(o.id)}" ${offer_id === o.id ? 'checked' : ''} ${disabled ? 'disabled' : ''}><span>${count > 1 ? count + ' × ' : ''}${esc(o.id ? offerLabel(o) : o.label)}${o.id ? ` <small class="offer-qty">(${units} × ${esc(packText('unit'))})</small>` : ''}${badge ? `<small class="offer-badge">${esc(badge)}</small>` : ''}</span><span class="offer-amount"><b>${money(total)}</b>${saving > 0 ? `<small>${money(saving)} ${esc(packText('saving'))}</small>` : ''}</span></label>`;
+        return `<label class="offer-choice"><input type="radio" name="checkout-offer-${index}" data-checkout-line="${index}" value="${esc(o.id)}" ${offer_id === o.id ? 'checked' : ''} ${disabled ? 'disabled' : ''}><span>${o.id ? `${count > 1 ? count + ' × ' : ''}${esc(offerLabel(o))}` : esc(units === 1 ? packText('unit') : units + ' ' + packText('units'))}${o.id ? ` <small class="offer-qty">${units} ${esc(packText('units'))}</small>` : ''}${badge ? `<small class="offer-badge">${esc(badge)}</small>` : ''}</span><span class="offer-amount"><b>${money(total)}</b>${saving > 0 ? `<small>${money(saving)} ${esc(packText('saving'))}</small>` : ''}</span></label>`;
       }).join('')}</fieldset>`;
     }).join('');
     updateShipping();

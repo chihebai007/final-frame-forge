@@ -315,7 +315,7 @@ function Products() {
         )}
       </div>
       <ImagePicker value={edit.image_url ?? ""} onChange={(v) => setEdit({ ...edit, image_url: v })} />
-      <QuantityOffers enabled={!!edit.packs_enabled} offers={readOffers(edit.quantity_offers)} onToggle={v => setEdit({...edit,packs_enabled:v})} onChange={offers => setEdit({...edit,quantity_offers:JSON.parse(JSON.stringify(offers))})}/>
+      <QuantityOffers productName={edit.name ?? ''} normalPrice={Number(edit.price ?? 0)} enabled={!!edit.packs_enabled} offers={readOffers(edit.quantity_offers)} onToggle={v => setEdit({...edit,packs_enabled:v})} onChange={offers => setEdit({...edit,quantity_offers:JSON.parse(JSON.stringify(offers))})}/>
       <div className="flex items-center gap-2"><Switch checked={!!edit.active} onCheckedChange={(v) => setEdit({ ...edit, active: v })} /><Label>En vente sur le site</Label></div>
       <div className="flex gap-2"><Button>Enregistrer</Button><Button type="button" variant="outline" onClick={() => setEdit(null)}>Annuler</Button></div>
     </form>

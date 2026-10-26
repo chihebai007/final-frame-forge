@@ -17,6 +17,7 @@
 - Enforce cancelled-only order deletion in a database trigger as well as the shared UI rule, so every deletion path respects the restriction.
 - Store quantity offers on products and share pack-pricing logic between the storefront and order handler; persist the chosen pack label with order items so historical orders remain understandable.
 - Checkout offer changes use shared pricing validation and update the persisted cart and totals together, preserving pack counts and checking aggregate product stock.
+- Keep the pack editor scoped to its parent product and collapse secondary translation fields; this keeps the primary price and quantity controls unambiguous.
 
 - Render fixed public photos only from saved `image_` settings, without HTML/CSS preset sources, so refreshes and failed reads cannot resurrect old or removed photos.
 - Admin saves re-translate French content to EN/AR through the staff-only translateFields server function (site_texts/articles/awards store it in a translations jsonb; products use name_*/description_* and pack label_*/badge_*), and saving still succeeds if translation fails.
