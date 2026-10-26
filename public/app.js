@@ -341,7 +341,10 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
     const t = e.target.closest("button, a");
     if (!t) return;
     if (t.dataset.add) { if (addToCart(t.dataset.add)) openCart(); }
-    else if (t.dataset.buy) { if (addToCart(t.dataset.buy, true)) openCheckout(); }
+    else if (t.dataset.buy) {
+      // "Commander maintenant" must not stack the same product again when the customer reopens the order form.
+      if (cart.some(x => x.product_id === t.dataset.buy) || addToCart(t.dataset.buy, true)) openCheckout();
+    }
     else if (t.dataset.reviews) openReviews(t.dataset.reviews);
     else if (t.dataset.star) { reviewRating = Number(t.dataset.star); renderStarsInput(); }
     else if (t.dataset.qty) changeQty(t.dataset.id, Number(t.dataset.qty),t.dataset.lineOffer || '');
