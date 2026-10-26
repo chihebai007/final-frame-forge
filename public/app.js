@@ -114,7 +114,7 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
     $$("[data-t]").forEach((el) => {
       const k = el.dataset.t;
       if (!(k in FR_ORIG)) FR_ORIG[k] = el.textContent;
-      const v = lang === "fr" ? (dbTexts[k] && dbTexts[k].trim() ? dbTexts[k] : FR_ORIG[k]) : (I18N[lang][k] || dbTexts[k] || FR_ORIG[k]);
+      const v = lang === "fr" ? (dbTexts[k] && dbTexts[k].trim() ? dbTexts[k] : FR_ORIG[k]) : (dbTexts[k + "__" + lang] || I18N[lang][k] || dbTexts[k] || FR_ORIG[k]);
       el.textContent = v;
     });
     $$("[data-i]").forEach((el) => {
@@ -178,6 +178,7 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
   }
   const pName = (p) => (lang !== "fr" && p["name_" + lang]) || p.name;
   const pDesc = (p) => (lang !== "fr" && p["description_" + lang]) || p.description;
+  const tx = (x, f) => (lang !== "fr" && x.translations && x.translations[lang] && x.translations[lang][f]) || x[f] || "";
   const productReviews = (id) => reviews.filter((r) => r.product_id === id);
 
   function renderProducts() {
@@ -202,12 +203,12 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
   async function loadAwards() { try { awards = await getJSON("/api/awards"); } catch { awards = []; } renderAwards(); }
   function renderAwards() {
     if (!awards) return;
-    $("#awardGrid").innerHTML = awards.map((a) => `<article class="award-card">${photo(a.image_url, a.title)}<div class="body">${a.year ? `<small>${esc(a.year)}</small>` : ""}<h3>${esc(a.title)}</h3><p>${esc(a.description)}</p></div></article>`).join("") || `<p class="empty">${esc(tr("no_awards"))}</p>`;
+    $("#awardGrid").innerHTML = awards.map((a) => `<article class="award-card">${photo(a.image_url, tx(a,"title"))}<div class="body">${a.year ? `<small>${esc(a.year)}</small>` : ""}<h3>${esc(tx(a,"title"))}</h3><p>${esc(tx(a,"description"))}</p></div></article>`).join("") || `<p class="empty">${esc(tr("no_awards"))}</p>`;
   }
   async function loadArticles() { try { articles = await getJSON("/api/articles"); } catch { articles = []; } renderArticles(); }
   function renderArticles() {
     if (!articles) return;
-    $("#articleGrid").innerHTML = articles.map((x) => `<article class="article-card">${photo(x.image_url, x.title)}<div class="body"><small>MITINAN</small><h3>${esc(x.title)}</h3><p>${esc(x.excerpt)}</p></div></article>`).join("") || "<p>" + esc(tr("no_articles")) + "</p>";
+    $("#articleGrid").innerHTML = articles.map((x) => `<article class="article-card">${photo(x.image_url, tx(x,"title"))}<div class="body"><small>MITINAN</small><h3>${esc(tx(x,"title"))}</h3><p>${esc(tx(x,"excerpt"))}</p></div></article>`).join("") || "<p>" + esc(tr("no_articles")) + "</p>";
   }
 
   // ---------- Panier ----------

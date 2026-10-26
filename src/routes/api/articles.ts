@@ -7,7 +7,7 @@ export const Route = createFileRoute("/api/articles")({
       GET: async () => {
         const { data, error } = await publicDb()
           .from("articles")
-          .select("id,title,excerpt,image_url")
+          .select("id,title,excerpt,image_url,translations")
           .eq("published", true)
           .order("created_at", { ascending: false });
         if (error) {
