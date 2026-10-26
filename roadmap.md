@@ -11,4 +11,4 @@
 - [x] Vérifier les prix des packs dans le panier et les commandes, ainsi que l’affichage sur téléphone.
 - [x] Ajouter et vérifier le choix des offres dans le formulaire de commande avec recalcul du total.
 - [x] Tester site et admin sur ordinateur, tablette, téléphone ; retouches UX/UI ; traduction automatique FR → EN/AR.
-- [ ] Simplifier les réglages des packs et vérifier les offres séparées par produit dans la commande.
+- [x] Simplifier les réglages des packs et vérifier les offres séparées par produit dans la commande.
