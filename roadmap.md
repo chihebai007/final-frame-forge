@@ -7,3 +7,5 @@
 - [x] Dans « Notre histoire », garder la photo à gauche et le texte à droite dans les trois langues.
 - [x] Corriger le retrait des photos dans tous les onglets et sur la boutique après enregistrement.
 - [x] Corriger les interrupteurs et colorer l’ajout d’image ; vérifier sur téléphone et ordinateur.
+- [ ] Ajouter des packs personnalisables par produit avec activation et désactivation dans l’admin.
+- [ ] Vérifier les prix des packs dans le panier et les commandes, ainsi que l’affichage sur téléphone.
