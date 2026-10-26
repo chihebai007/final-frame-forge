@@ -1,4 +1,4 @@
-import { readOffers, priceLine } from './pack-pricing.js';
+import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
 (() => {
   "use strict";
   const $ = (s) => document.querySelector(s);
@@ -134,6 +134,7 @@ import { readOffers, priceLine } from './pack-pricing.js';
     renderArticles();
     if ($("#wilaya").value) fillCommunes();
     if ($("#cartModal").classList.contains("show")) renderCart();
+    if ($("#checkoutModal").classList.contains("show")) renderCheckout();
   }
 
   // ---------- Données ----------
@@ -273,11 +274,28 @@ import { readOffers, priceLine } from './pack-pricing.js';
   }
   function openCheckout() {
     if (!cart.length) return alert(tr("empty_cart"));
+    renderCheckout();
+    showModal("#checkoutModal");
+    loadRates().then(updateShipping);
+  }
+  function renderCheckout() {
     const { lines, total } = cartLines();
     $("#summaryItems").innerHTML = lines.map(({ p, q, pricing }) => `<div class="sum-row"><span>${q} × ${esc(pName(p))} <small>${esc(p.size)} ${esc(pricing.label)}</small></span><b>${money(pricing.total)}</b></div>`).join("");
     $("#summarySub").textContent = money(total);
-    showModal("#checkoutModal");
-    loadRates().then(updateShipping);
+    $("#checkoutOffers").innerHTML = lines.map(({p, q, pricing, offer_id}, index) => {
+      const offers = availableOffers(p);
+      if (!offers.length) return '';
+      const count = q / pricing.step;
+      const otherQuantity = cart.filter((line, i) => i !== index && line.product_id === p.id).reduce((sum,line) => sum + line.quantity,0);
+      const options = [{id:'',quantity:1,price:p.price,label:packText('unit')},...offers];
+      return `<fieldset class="quantity-offers checkout-offers"><legend>${esc(packText('choose'))} — ${esc(pName(p))}</legend>${options.map(o => {
+        const badge = (lang !== 'fr' && o['badge_'+lang]) || o.badge || '';
+        const saving = Math.max(0,p.price*o.quantity-o.price);
+        const disabled = otherQuantity + count * o.quantity > Math.min(p.stock,100);
+        return `<label class="offer-choice"><input type="radio" name="checkout-offer-${index}" data-checkout-line="${index}" value="${esc(o.id)}" ${offer_id === o.id ? 'checked' : ''} ${disabled ? 'disabled' : ''}><span>${esc(o.id ? offerLabel(o) : o.label)}${badge ? `<small class="offer-badge">${esc(badge)}</small>` : ''}</span><span class="offer-amount"><b>${money(o.price)}</b>${saving > 0 ? `<small>${money(saving)} ${esc(packText('saving'))}</small>` : ''}</span></label>`;
+      }).join('')}${count > 1 ? `<div class="checkout-offer-count">${count} × ${esc(packText('choose'))} · ${q} ${esc(packText('unit'))} · ${money(pricing.total)}</div>` : ''}</fieldset>`;
+    }).join('');
+    updateShipping();
   }
   let RATES = null;
   async function loadRates() { if (!RATES) { try { RATES = await getJSON("/api/shipping"); } catch { RATES = []; } } }
@@ -338,7 +356,20 @@ import { readOffers, priceLine } from './pack-pricing.js';
     if (t.closest("#mainNav")) toggleMenu(false);
   });
   const toggleMenu = (open) => { document.body.classList.toggle("menu-open", open); $("#burger").setAttribute("aria-expanded", String(open)); };
-  document.addEventListener('change',e => { if (e.target.dataset.offerProduct) selectedOffers.set(e.target.dataset.offerProduct,e.target.value); });
+  document.addEventListener('change',e => {
+    if (e.target.dataset.offerProduct) selectedOffers.set(e.target.dataset.offerProduct,e.target.value);
+    if (e.target.dataset.checkoutLine !== undefined) {
+      const index = Number(e.target.dataset.checkoutLine);
+      const line = cart[index];
+      const p = line && products.find(p => p.id === line.product_id);
+      if (!p) return;
+      try {
+        cart = changeCartOffer(cart,{...p,price:p.base_price},index,e.target.value);
+        saveCart();
+      } catch { alert(tr('max_stock')); }
+      renderCheckout();
+    }
+  });
   $("#burger").onclick = (e) => { e.stopPropagation(); toggleMenu(!document.body.classList.contains("menu-open")); };
   $$(".modal").forEach((m) => m.addEventListener("click", (e) => { if (e.target === m) m.classList.remove("show"); }));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { $$(".modal.show").forEach((m) => m.classList.remove("show")); toggleMenu(false); } });
