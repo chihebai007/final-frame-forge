@@ -15,3 +15,4 @@
 - Enforce shop-staff permissions with database role policies and admin-only team server functions; UI visibility is not authorization.
 - Keep anonymous analytics in daily aggregate rows without IP addresses or persistent visitor identifiers; acquisition sources are recorded on orders for customer attribution.
 - Enforce cancelled-only order deletion in a database trigger as well as the shared UI rule, so every deletion path respects the restriction.
+- Store quantity offers on products and share pack-pricing logic between the storefront and order handler; persist the chosen pack label with order items so historical orders remain understandable.

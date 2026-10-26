@@ -14,6 +14,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { Shipping } from "@/components/admin/Shipping";
 import { Team } from "@/components/admin/Team";
 import { Traffic } from "@/components/admin/Traffic";
+import { QuantityOffers } from "@/components/admin/QuantityOffers";
+import { readOffers } from '../../public/pack-pricing.js';
 import { canDeleteOrder, canOpenTab } from "@/lib/shop-access";
 import { LayoutDashboard, Package, ShoppingBag, Users, Star, Truck, Mail, FileText, Image as ImageIcon, Award, Type, ImagePlus, X } from "lucide-react";
 
@@ -296,6 +298,7 @@ function Products() {
         )}
       </div>
       <ImagePicker value={edit.image_url ?? ""} onChange={(v) => setEdit({ ...edit, image_url: v })} />
+      <QuantityOffers enabled={!!edit.packs_enabled} offers={readOffers(edit.quantity_offers)} onToggle={v => setEdit({...edit,packs_enabled:v})} onChange={offers => setEdit({...edit,quantity_offers:JSON.parse(JSON.stringify(offers))})}/>
       <div className="flex items-center gap-2"><Switch checked={!!edit.active} onCheckedChange={(v) => setEdit({ ...edit, active: v })} /><Label>En vente sur le site</Label></div>
       <div className="flex gap-2"><Button>Enregistrer</Button><Button type="button" variant="outline" onClick={() => setEdit(null)}>Annuler</Button></div>
     </form>
@@ -496,7 +499,7 @@ function Orders() {
           <p className="text-sm">{o.first_name} {o.last_name} · <a className="underline" href={`tel:${o.phone}`}><bdi dir="ltr">{o.phone}</bdi></a>{o.email && ` · ${o.email}`}</p>
           <p className="text-sm text-muted-foreground">{o.destination === "international" ? <b>International (devis) · {o.country} · </b> : null}{o.address}, {o.commune}, {o.wilaya} · {date(o.created_at)}</p>
           <ul className="text-sm">
-            {o.order_items.map((i) => <li key={i.id}>{i.quantity} × {i.product_name} ({money(i.unit_price)})</li>)}
+            {o.order_items.map((i) => <li key={i.id}>{i.quantity} × {i.product_name}{i.pack_label ? ` · ${i.pack_label}` : ''} ({money(i.unit_price * i.quantity)})</li>)}
             {o.destination !== "international" && <li>Livraison {o.delivery_type === "bureau" ? "au bureau" : "à domicile"} : {money(o.shipping_fee)}</li>}
           </ul>
         </div>
