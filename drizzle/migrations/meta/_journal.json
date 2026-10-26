@@ -36,6 +36,13 @@
       "when": 1793033134463,
       "tag": "0004_product_quantity_packs",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793046298653,
+      "tag": "0005_content_translations",
+      "breakpoints": true
     }
   ]
 }

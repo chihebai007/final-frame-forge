@@ -171,3 +171,5 @@
   .shipping-table td:not(:first-child)::before { content: attr(data-label); font-size: 12px; color: var(--muted-foreground); }
   .shipping-table input { width: 100%; }
 }
+
+@layer base { button, [role="tab"], select { min-height: 2.25rem; } }

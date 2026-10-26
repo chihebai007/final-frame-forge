@@ -17,6 +17,15 @@ import { Traffic } from "@/components/admin/Traffic";
 import { QuantityOffers } from "@/components/admin/QuantityOffers";
 import { readOffers } from '../../public/pack-pricing.js';
 import { canDeleteOrder, canOpenTab } from "@/lib/shop-access";
+import { translateFields } from "@/lib/translate.functions";
+
+type Translated = { en: Record<string, string>; ar: Record<string, string> };
+// Always re-translates French text to EN/AR; returns null (and warns) if the service fails so saving still works.
+async function autoTranslate(texts: Record<string, string>): Promise<Translated | null> {
+  const id = toast.loading("Traduction automatique en anglais et en arabe…");
+  try { const r = await translateFields({ data: { texts } }); toast.dismiss(id); return r; }
+  catch (e) { toast.dismiss(id); toast.warning(`Enregistré sans traduction : ${e instanceof Error ? e.message : "erreur"}`); return null; }
+}
 import { LayoutDashboard, Package, ShoppingBag, Users, Star, Truck, Mail, FileText, Image as ImageIcon, Award, Type, ImagePlus, X } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -251,6 +260,14 @@ function Products() {
     const sale = row.sale_price == null || Number(row.sale_price) <= 0 ? null : Number(row.sale_price);
     if (sale !== null && sale >= Number(row.price)) return toast.error("Le prix promo doit être inférieur au prix normal.");
     const payload = { ...row, name: row.name.trim(), price: Number(row.price), sale_price: sale, stock: Math.max(0, Math.floor(Number(row.stock))) };
+    const offers = readOffers(row.quantity_offers);
+    const src: Record<string, string> = { name: payload.name, description: row.description ?? "" };
+    offers.forEach((o, i) => { src[`l${i}`] = o.label ?? ""; src[`b${i}`] = o.badge ?? ""; });
+    const t = await autoTranslate(src);
+    if (t) {
+      Object.assign(payload, { name_en: t.en["name"], name_ar: t.ar["name"], description_en: t.en["description"], description_ar: t.ar["description"],
+        quantity_offers: offers.map((o, i) => ({ ...o, label_en: t.en[`l${i}`], label_ar: t.ar[`l${i}`], badge_en: t.en[`b${i}`], badge_ar: t.ar[`b${i}`] })) });
+    }
     const { error } = id ? await supabase.from("products").update(payload).eq("id", id) : await supabase.from("products").insert(payload);
     if (error) return toast.error(error.message);
     toast.success("Produit enregistré");
@@ -335,6 +352,8 @@ function Articles() {
     e.preventDefault();
     if (!edit) return;
     const { id, created_at: _c, updated_at: _u, ...row } = edit as Article;
+    const t = await autoTranslate({ title: row.title, excerpt: row.excerpt ?? "", content: row.content ?? "" });
+    if (t) row.translations = t;
     const { error } = id ? await supabase.from("articles").update(row).eq("id", id) : await supabase.from("articles").insert(row);
     if (error) return toast.error(error.message);
     toast.success("Article enregistré");
@@ -429,11 +448,14 @@ function Texts() {
   }, []);
   async function save() {
     const changed = list.filter((t) => draft[t.key] !== t.value);
+    const tr = changed.length ? await autoTranslate(Object.fromEntries(changed.map((t) => [t.key, draft[t.key] ?? ""]))) : null;
     for (const t of changed) {
-      const { error } = await supabase.from("site_texts").update({ value: draft[t.key] ?? "" }).eq("key", t.key);
+      const translations = tr ? { en: tr.en[t.key] ?? "", ar: tr.ar[t.key] ?? "" } : t.translations;
+      const { error } = await supabase.from("site_texts").update({ value: draft[t.key] ?? "", translations }).eq("key", t.key);
       if (error) return toast.error(error.message);
     }
     setList(list.map((t) => ({ ...t, value: draft[t.key] ?? t.value })));
+    if (tr) toast.success("Traduit automatiquement en anglais et en arabe");
     toast.success(changed.length ? `${changed.length} texte(s) enregistré(s)` : "Aucun changement");
     return;
   }
@@ -545,6 +567,8 @@ function Awards() {
     if (!edit) return;
     const { id, created_at: _c, ...row } = edit as Award;
     const payload = { ...row, title: row.title.trim() };
+    const t = await autoTranslate({ title: payload.title, description: row.description ?? "" });
+    if (t) payload.translations = t;
     const { error } = id ? await supabase.from("awards").update(payload).eq("id", id) : await supabase.from("awards").insert(payload);
     if (error) return toast.error(error.message);
     toast.success("Distinction enregistrée");
