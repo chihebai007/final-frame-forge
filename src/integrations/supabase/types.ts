@@ -108,6 +108,7 @@ export type Database = {
         Row: {
           id: string
           order_id: string
+          pack_label: string
           product_id: string | null
           product_name: string
           quantity: number
@@ -116,6 +117,7 @@ export type Database = {
         Insert: {
           id?: string
           order_id: string
+          pack_label?: string
           product_id?: string | null
           product_name: string
           quantity: number
@@ -124,6 +126,7 @@ export type Database = {
         Update: {
           id?: string
           order_id?: string
+          pack_label?: string
           product_id?: string | null
           product_name?: string
           quantity?: number
@@ -219,7 +222,9 @@ export type Database = {
           name: string
           name_ar: string
           name_en: string
+          packs_enabled: boolean
           price: number
+          quantity_offers: Json
           sale_price: number | null
           size: string
           sort_order: number
@@ -238,7 +243,9 @@ export type Database = {
           name: string
           name_ar?: string
           name_en?: string
+          packs_enabled?: boolean
           price?: number
+          quantity_offers?: Json
           sale_price?: number | null
           size?: string
           sort_order?: number
@@ -257,7 +264,9 @@ export type Database = {
           name?: string
           name_ar?: string
           name_en?: string
+          packs_enabled?: boolean
           price?: number
+          quantity_offers?: Json
           sale_price?: number | null
           size?: string
           sort_order?: number

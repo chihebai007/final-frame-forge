@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { json } from "@/lib/public-db.server";
+import { priceLine } from '../../../public/pack-pricing.js';
 
 const schema = z
   .object({
@@ -17,7 +18,7 @@ const schema = z
     website: z.string().optional(),
     acquisition_source: z.string().trim().max(100).optional().default('Non renseignée'),
     items: z
-      .array(z.object({ product_id: z.string().uuid(), quantity: z.number().int().min(1).max(100) }))
+      .array(z.object({ product_id: z.string().uuid(), quantity: z.number().int().min(1).max(100), offer_id: z.string().max(100).optional().default('') }))
       .min(1, "Panier vide")
       .max(50),
   })
@@ -51,23 +52,29 @@ export const Route = createFileRoute("/api/orders")({
         const ids = [...new Set(items.map((i) => i.product_id))];
         const { data: products, error } = await supabaseAdmin
           .from("products")
-          .select("id,name,price,sale_price,stock,active")
+          .select("id,name,price,sale_price,stock,active,packs_enabled,quantity_offers")
           .in("id", ids);
         if (error) return json({ error: "Erreur serveur" }, 500);
 
         // Merge duplicate lines and check stock using real prices from the database.
         const qty = new Map<string, number>();
-        for (const i of items) qty.set(i.product_id, (qty.get(i.product_id) ?? 0) + i.quantity);
+        const grouped = new Map<string, typeof items[number]>();
+        for (const i of items) {
+          qty.set(i.product_id, (qty.get(i.product_id) ?? 0) + i.quantity);
+          const key = `${i.product_id}|${i.offer_id}`;
+          grouped.set(key, {...i, quantity:(grouped.get(key)?.quantity ?? 0) + i.quantity});
+        }
         const lines = [];
         let total = 0;
-        for (const [id, q] of qty) {
+        for (const {product_id:id, quantity:q, offer_id} of grouped.values()) {
           const p = products.find((x) => x.id === id);
           if (!p || !p.active) return json({ error: "Un produit du panier n’est plus disponible." }, 400);
-          if (p.stock < q) return json({ error: `Stock insuffisant pour « ${p.name} » (reste ${p.stock}).` }, 400);
-          const sale = Number(p.sale_price);
-          const unit = sale > 0 && sale < Number(p.price) ? sale : Number(p.price);
-          total += unit * q;
-          lines.push({ product_id: id, product_name: p.name, quantity: q, unit_price: unit, stock: p.stock });
+          if (p.stock < (qty.get(id) ?? 0)) return json({ error: `Stock insuffisant pour « ${p.name} » (reste ${p.stock}).` }, 400);
+          let pricing;
+          try { pricing = priceLine(p, q, offer_id); }
+          catch (error) { return json({error: error instanceof Error ? error.message : 'Pack invalide'},400); }
+          total += pricing.total;
+          lines.push({ product_id: id, product_name: p.name, quantity: q, unit_price: pricing.unit, pack_label:pricing.label });
         }
 
         // Delivery fee from the admin-managed rate table (wilaya value starts with its code, e.g. "10 - Bouira").
@@ -90,10 +97,11 @@ export const Route = createFileRoute("/api/orders")({
         if (oErr) return json({ error: "Erreur lors de l’enregistrement" }, 500);
 
         await supabaseAdmin.from("order_items").insert(
-          lines.map(({ stock: _s, ...l }) => ({ ...l, order_id: order.id })),
+          lines.map(l => ({ ...l, order_id: order.id })),
         );
-        for (const l of lines) {
-          await supabaseAdmin.from("products").update({ stock: l.stock - l.quantity }).eq("id", l.product_id);
+        for (const [id, quantity] of qty) {
+          const p = products.find(p => p.id === id);
+          if (p) await supabaseAdmin.from("products").update({ stock: p.stock - quantity }).eq("id", id);
         }
         return json({ ok: true, order_number: order.order_number });
       },

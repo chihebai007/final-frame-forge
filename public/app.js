@@ -1,3 +1,4 @@
+import { readOffers, priceLine } from './pack-pricing.js';
 (() => {
   "use strict";
   const $ = (s) => document.querySelector(s);
@@ -33,6 +34,11 @@
   let lang = localStorage.getItem("mitinan_lang") || "fr";
   if (!["fr", "ar", "en"].includes(lang)) lang = "fr";
   let cart = [];
+  const selectedOffers = new Map();
+  const packText = (key) => ({fr:{choose:'Choisissez votre offre',unit:'1 unité',pack:'Pack',saving:'de remise'},en:{choose:'Choose your offer',unit:'1 unit',pack:'Pack',saving:'discount'},ar:{choose:'اختر العرض',unit:'وحدة واحدة',pack:'حزمة',saving:'تخفيض'}}[lang][key]);
+  const pricingFor = (p,q,id) => priceLine({...p,price:p.base_price},q,id);
+  const availableOffers = p => p.packs_enabled ? readOffers(p.quantity_offers).filter(o => o.enabled) : [];
+  const offerLabel = o => (lang !== 'fr' && o['label_'+lang]) || o.label || `${packText('pack')} ${o.quantity}`;
   try { cart = JSON.parse(localStorage.getItem("mitinan_cart_v2") || "[]"); if (!Array.isArray(cart)) cart = []; } catch { cart = []; }
 
   // 69 wilayas (découpage administratif 2025)
@@ -153,7 +159,7 @@
       const [p, r] = await Promise.all([getJSON("/api/products"), getJSON("/api/reviews").catch(() => [])]);
       products = p.map((x) => {
         const base = Number(x.price), sale = Number(x.sale_price);
-        return sale > 0 && sale < base ? { ...x, price: sale, old_price: base, discount: Math.round((1 - sale / base) * 100) } : { ...x, price: base };
+        return sale > 0 && sale < base ? { ...x, base_price:base, price: sale, old_price: base, discount: Math.round((1 - sale / base) * 100) } : { ...x, base_price:base, price: base };
       });
       reviews = r;
     } catch (e) {
@@ -161,9 +167,11 @@
       $("#productGrid").innerHTML = "<p>" + esc(tr("err")) + "</p>";
       return;
     }
-    cart = cart.filter((i) => products.some((p) => p.id === i.product_id))
-      .map((i) => ({ ...i, quantity: Math.min(i.quantity, products.find((p) => p.id === i.product_id).stock) }))
-      .filter((i) => i.quantity > 0);
+    cart = cart.filter(i => {
+      const p = products.find(p => p.id === i.product_id);
+      if (!p) return false;
+      try { const rule = pricingFor(p,i.quantity,i.offer_id || ''); i.quantity = Math.floor(Math.min(i.quantity,p.stock)/rule.step)*rule.step; return i.quantity > 0; } catch { return false; }
+    });
     saveCart();
     renderProducts();
   }
@@ -178,11 +186,18 @@
     grid.innerHTML = list.map((p) => {
       const rv = productReviews(p.id);
       const avg = rv.length ? rv.reduce((s, r) => s + r.rating, 0) / rv.length : 0;
+      const offers = availableOffers(p);
+      const selected = selectedOffers.get(p.id) || '';
       return `<article class="product-card">
   ${safeUrl(p.image_url) ? `<div class="photo">${photo(p.image_url, pName(p))}</div>` : ""}
   <div class="body"><h3>${esc(pName(p))}</h3><div class="size">${esc(p.size)}</div>
   <button type="button" class="rating" data-reviews="${esc(p.id)}">${rv.length ? `<span class="stars">${stars(avg)}</span> ${avg.toFixed(1)} · ${rv.length} ${esc(tr("reviews"))}` : `<span class="stars dim">☆☆☆☆☆</span> ${esc(tr("no_review"))}`}</button>
   <p>${esc(pDesc(p))}</p><div class="stock">${esc(p.stock > 0 ? tr("in_stock") : tr("out"))}</div><div class="price">${p.old_price ? `<s class="old-price">${money(p.old_price)}</s> ${money(p.price)} <span class="discount-badge">-${p.discount}%</span>` : money(p.price)}</div>
+  ${offers.length ? `<fieldset class="quantity-offers"><legend>${esc(packText('choose'))}</legend><label class="offer-choice"><input type="radio" name="offer-${esc(p.id)}" data-offer-product="${esc(p.id)}" value="" ${!selected ? 'checked' : ''}><span>${esc(packText('unit'))}</span><b>${money(p.price)}</b></label>${offers.map(o => {
+    const badge = (lang !== 'fr' && o['badge_'+lang]) || o.badge || '';
+    const saving = Math.max(0,p.price*o.quantity-o.price);
+    return `<label class="offer-choice"><input type="radio" name="offer-${esc(p.id)}" data-offer-product="${esc(p.id)}" value="${esc(o.id)}" ${selected === o.id ? 'checked' : ''} ${p.stock < o.quantity ? 'disabled' : ''}><span>${esc(offerLabel(o))}${badge ? `<small class="offer-badge">${esc(badge)}</small>` : ''}</span><span class="offer-amount"><b>${money(o.price)}</b>${saving > 0 ? `<small>${money(saving)} ${esc(packText('saving'))}</small>` : ''}</span></label>`;
+  }).join('')}</fieldset>` : ''}
   <div class="card-actions"><button type="button" class="btn gold" data-buy="${esc(p.id)}" ${p.stock < 1 ? "disabled" : ""}>${esc(tr("buy"))}</button><button type="button" class="btn outline" data-add="${esc(p.id)}" ${p.stock < 1 ? "disabled" : ""}>${esc(tr("add"))}</button></div></div>
 </article>`;
     }).join("") || "<p>" + esc(tr("no_products")) + "</p>";
@@ -210,11 +225,15 @@
   function addToCart(id, silent) {
     const p = products.find((x) => x.id === id);
     if (!p || p.stock < 1) return false;
-    const i = cart.find((x) => x.product_id === id);
+    const offer_id = selectedOffers.get(id) || '';
+    const offer = availableOffers(p).find(o => o.id === offer_id);
+    const step = offer ? offer.quantity : 1;
+    const used = cart.filter(x => x.product_id === id).reduce((s,x) => s+x.quantity,0);
+    if (used + step > p.stock || used + step > 100) { alert(tr('max_stock')); return false; }
+    const i = cart.find((x) => x.product_id === id && (x.offer_id || '') === offer_id);
     if (i) {
-      if (i.quantity >= p.stock) { if (!silent) alert(tr("max_stock")); return !!silent; }
-      i.quantity++;
-    } else cart.push({ product_id: id, quantity: 1 });
+      i.quantity += step;
+    } else cart.push({ product_id: id, quantity: step, offer_id });
     saveCart();
     return true;
   }
@@ -229,30 +248,33 @@
     const lines = cart.map((i) => {
       const p = products.find((x) => x.id === i.product_id);
       if (!p) return null;
-      total += p.price * i.quantity;
-      return { p, q: i.quantity };
+      const pricing = pricingFor(p,i.quantity,i.offer_id || '');
+      total += pricing.total;
+      return { p, q: i.quantity, pricing, offer_id:i.offer_id || '' };
     }).filter(Boolean);
     return { lines, total };
   }
   function renderCart() {
     const { lines, total } = cartLines();
-    $("#cartItems").innerHTML = lines.map(({ p, q }) => `<div class="cart-row">${photo(p.image_url)}<div><b>${esc(pName(p))}</b><div>${esc(p.size)} · ${money(p.price)}</div></div><div class="qty"><button type="button" data-qty="-1" data-id="${esc(p.id)}" aria-label="-">−</button> ${q} <button type="button" data-qty="1" data-id="${esc(p.id)}" aria-label="+">+</button></div></div>`).join("") || "<p>" + esc(tr("empty_cart")) + "</p>";
+    $("#cartItems").innerHTML = lines.map(({ p, q, pricing, offer_id }) => `<div class="cart-row">${photo(p.image_url)}<div><b>${esc(pName(p))}</b><div>${esc(p.size)} · ${pricing.label ? esc(offerLabel(availableOffers(p).find(o => o.id === offer_id)))+' · ' : ''}${money(pricing.total)}</div></div><div class="qty"><button type="button" data-qty="-1" data-id="${esc(p.id)}" data-line-offer="${esc(offer_id)}" aria-label="-">−</button> ${q} <button type="button" data-qty="1" data-id="${esc(p.id)}" data-line-offer="${esc(offer_id)}" aria-label="+">+</button></div></div>`).join("") || "<p>" + esc(tr("empty_cart")) + "</p>";
     $("#cartTotal").textContent = money(total);
   }
-  function changeQty(id, d) {
-    const i = cart.find((x) => x.product_id === id);
+  function changeQty(id, d, offer_id = '') {
+    const i = cart.find((x) => x.product_id === id && (x.offer_id || '') === offer_id);
     const p = products.find((x) => x.id === id);
     if (!i || !p) return;
-    if (d > 0 && i.quantity >= p.stock) return alert(tr("max_stock"));
-    i.quantity += d;
-    if (i.quantity <= 0) cart = cart.filter((x) => x.product_id !== id);
+    const step = pricingFor(p,i.quantity,offer_id).step;
+    const used = cart.filter(x => x.product_id === id).reduce((s,x) => s+x.quantity,0);
+    if (d > 0 && (used + step > p.stock || used + step > 100)) return alert(tr("max_stock"));
+    i.quantity += d * step;
+    if (i.quantity <= 0) cart = cart.filter((x) => x !== i);
     saveCart();
     renderCart();
   }
   function openCheckout() {
     if (!cart.length) return alert(tr("empty_cart"));
     const { lines, total } = cartLines();
-    $("#summaryItems").innerHTML = lines.map(({ p, q }) => `<div class="sum-row"><span>${q} × ${esc(pName(p))} <small>${esc(p.size)}</small></span><b>${money(p.price * q)}</b></div>`).join("");
+    $("#summaryItems").innerHTML = lines.map(({ p, q, pricing }) => `<div class="sum-row"><span>${q} × ${esc(pName(p))} <small>${esc(p.size)} ${esc(pricing.label)}</small></span><b>${money(pricing.total)}</b></div>`).join("");
     $("#summarySub").textContent = money(total);
     showModal("#checkoutModal");
     loadRates().then(updateShipping);
@@ -308,7 +330,7 @@
     else if (t.dataset.buy) { if (addToCart(t.dataset.buy, true)) openCheckout(); }
     else if (t.dataset.reviews) openReviews(t.dataset.reviews);
     else if (t.dataset.star) { reviewRating = Number(t.dataset.star); renderStarsInput(); }
-    else if (t.dataset.qty) changeQty(t.dataset.id, Number(t.dataset.qty));
+    else if (t.dataset.qty) changeQty(t.dataset.id, Number(t.dataset.qty),t.dataset.lineOffer || '');
     else if (t.dataset.filter) setFilter(t.dataset.filter);
     else if (t.dataset.filterLink) setFilter(t.dataset.filterLink);
     else if (t.dataset.lang) { lang = t.dataset.lang; localStorage.setItem("mitinan_lang", lang); applyLang(); }
@@ -316,6 +338,7 @@
     if (t.closest("#mainNav")) toggleMenu(false);
   });
   const toggleMenu = (open) => { document.body.classList.toggle("menu-open", open); $("#burger").setAttribute("aria-expanded", String(open)); };
+  document.addEventListener('change',e => { if (e.target.dataset.offerProduct) selectedOffers.set(e.target.dataset.offerProduct,e.target.value); });
   $("#burger").onclick = (e) => { e.stopPropagation(); toggleMenu(!document.body.classList.contains("menu-open")); };
   $$(".modal").forEach((m) => m.addEventListener("click", (e) => { if (e.target === m) m.classList.remove("show"); }));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { $$(".modal.show").forEach((m) => m.classList.remove("show")); toggleMenu(false); } });
