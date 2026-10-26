@@ -19,3 +19,4 @@
 - Checkout offer changes use shared pricing validation and update the persisted cart and totals together, preserving pack counts and checking aggregate product stock.
 
 - Render fixed public photos only from saved `image_` settings, without HTML/CSS preset sources, so refreshes and failed reads cannot resurrect old or removed photos.
+- Admin saves re-translate French content to EN/AR through the staff-only translateFields server function (site_texts/articles/awards store it in a translations jsonb; products use name_*/description_* and pack label_*/badge_*), and saving still succeeds if translation fails.
