@@ -81,6 +81,7 @@
 <div id="cartModal" class="modal"><div class="modal-box"><button type="button" class="close" data-close aria-label="Fermer">×</button><h2 data-i="your_cart">Votre panier</h2><div id="cartItems"></div><div class="cart-total"><span data-i="total">Total</span> : <b id="cartTotal">0 DA</b></div><button type="button" id="checkoutBtn" class="btn gold full" data-i="checkout">Passer la commande</button></div></div>
 
 <div id="checkoutModal" class="modal"><div class="modal-box"><button type="button" class="close" data-close aria-label="Fermer">×</button><h2 data-i="checkout_title">Commande — paiement à la livraison</h2>
+<div id="checkoutOffers"></div>
 <div class="summary"><h3 data-i="summary">Récapitulatif</h3><div id="summaryItems"></div><div class="sum-row"><span data-i="subtotal">Sous-total produits</span><b id="summarySub">0 DA</b></div><div class="sum-row"><span><span data-i="shipping">Livraison</span> <small id="shipCompany"></small></span><b id="summaryShip">—</b></div><div class="summary-total"><span data-i="total">Total</span> <b id="summaryTotal">0 DA</b></div></div>
 <form id="checkoutForm" class="checkout">
   <div class="dest"><label><input type="radio" name="destination" value="algerie" checked> <span data-i="dest_dz">Algérie</span></label><label><input type="radio" name="destination" value="international"> <span data-i="dest_int">International (sur devis)</span></label></div>
@@ -91,7 +92,6 @@
   <div class="dz-only dest" id="deliveryType"><label><input type="radio" name="delivery_type" value="domicile" checked> <span data-i="ship_home">Livraison à domicile</span> <b id="priceHome"></b></label><label id="deskLabel"><input type="radio" name="delivery_type" value="bureau"> <span data-i="ship_desk">Retrait au bureau</span> <b id="priceDesk"></b></label></div>
   <input class="int-only" name="country" data-ph="ph_country" placeholder="Pays" maxlength="100">
   <textarea name="address" data-ph="ph_address" placeholder="Adresse de livraison" required maxlength="500"></textarea>
-  <div id="checkoutOffers"></div>
   <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
   <button class="btn gold full" data-i="confirm">Confirmer la commande</button>
 </form><p class="payment-note" id="payNote" data-i="pay_note">Paiement à la livraison — aucun paiement en ligne n’est demandé.</p></div></div>

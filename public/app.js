@@ -187,8 +187,6 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
     grid.innerHTML = list.map((p) => {
       const rv = productReviews(p.id);
       const avg = rv.length ? rv.reduce((s, r) => s + r.rating, 0) / rv.length : 0;
-      const offers = availableOffers(p);
-      const selected = selectedOffers.get(p.id) || '';
       return `<article class="product-card">
   ${safeUrl(p.image_url) ? `<div class="photo">${photo(p.image_url, pName(p))}</div>` : ""}
   <div class="body"><h3>${esc(pName(p))}</h3><div class="size">${esc(p.size)}</div>
