@@ -16,5 +16,6 @@
 - Keep anonymous analytics in daily aggregate rows without IP addresses or persistent visitor identifiers; acquisition sources are recorded on orders for customer attribution.
 - Enforce cancelled-only order deletion in a database trigger as well as the shared UI rule, so every deletion path respects the restriction.
 - Store quantity offers on products and share pack-pricing logic between the storefront and order handler; persist the chosen pack label with order items so historical orders remain understandable.
+- Checkout offer changes use shared pricing validation and update the persisted cart and totals together, preserving pack counts and checking aggregate product stock.
 
 - Render fixed public photos only from saved `image_` settings, without HTML/CSS preset sources, so refreshes and failed reads cannot resurrect old or removed photos.

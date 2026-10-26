@@ -1,3 +1,4 @@
 export interface QuantityOffer { id: string; quantity: number; price: number; label: string; label_en?: string; label_ar?: string; badge?: string; badge_en?: string; badge_ar?: string; enabled: boolean }
 export function readOffers(value: unknown): QuantityOffer[];
 export function priceLine(product: {price: number; sale_price?: number | null; packs_enabled?: boolean; quantity_offers?: unknown}, quantity: number, offerId?: string): {total: number; unit: number; label: string; step: number};
+export function changeCartOffer(cart: {product_id:string;quantity:number;offer_id?:string}[], product: {price:number;stock:number;sale_price?:number|null;packs_enabled?:boolean;quantity_offers?:unknown}, index:number, offerId:string): {product_id:string;quantity:number;offer_id?:string}[];
