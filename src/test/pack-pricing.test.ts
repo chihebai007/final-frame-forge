@@ -10,10 +10,12 @@ describe('Customizable packs', () => {
   it('changes checkout offers and charges the selected pack', () => {
     const cart = changeCartOffer([{product_id:'oil',quantity:1}],{...product,stock:20},0,'two');
     expect(cart).toEqual([{product_id:'oil',quantity:2,offer_id:'two'}]);
-    expect(priceLine(product,cart[0].quantity,cart[0].offer_id).total).toBe(8900);
+    const line = cart[0];
+    if (!line) throw new Error('Expected checkout line');
+    expect(priceLine(product,line.quantity,line.offer_id).total).toBe(8900);
   });
   it('preserves pack count when switching offers', () => {
-    expect(changeCartOffer([{product_id:'oil',quantity:4,offer_id:'two'}],{...product,stock:20},0,'three')[0].quantity).toBe(6);
+    expect(changeCartOffer([{product_id:'oil',quantity:4,offer_id:'two'}],{...product,stock:20},0,'three')[0]?.quantity).toBe(6);
   });
   it('checks stock across all offers of the same product', () => {
     expect(() => changeCartOffer([{product_id:'oil',quantity:1},{product_id:'oil',quantity:3,offer_id:'three'}],{...product,stock:4},0,'two')).toThrow();
