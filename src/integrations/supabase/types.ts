@@ -23,6 +23,7 @@ export type Database = {
           image_url: string
           published: boolean
           title: string
+          translations: Json
           updated_at: string
         }
         Insert: {
@@ -33,6 +34,7 @@ export type Database = {
           image_url?: string
           published?: boolean
           title: string
+          translations?: Json
           updated_at?: string
         }
         Update: {
@@ -43,6 +45,7 @@ export type Database = {
           image_url?: string
           published?: boolean
           title?: string
+          translations?: Json
           updated_at?: string
         }
         Relationships: []
@@ -56,6 +59,7 @@ export type Database = {
           published: boolean
           sort_order: number
           title: string
+          translations: Json
           year: string
         }
         Insert: {
@@ -66,6 +70,7 @@ export type Database = {
           published?: boolean
           sort_order?: number
           title: string
+          translations?: Json
           year?: string
         }
         Update: {
@@ -76,6 +81,7 @@ export type Database = {
           published?: boolean
           sort_order?: number
           title?: string
+          translations?: Json
           year?: string
         }
         Relationships: []
@@ -345,6 +351,7 @@ export type Database = {
           key: string
           label: string
           sort_order: number
+          translations: Json
           updated_at: string
           value: string
         }
@@ -352,6 +359,7 @@ export type Database = {
           key: string
           label?: string
           sort_order?: number
+          translations?: Json
           updated_at?: string
           value?: string
         }
@@ -359,6 +367,7 @@ export type Database = {
           key?: string
           label?: string
           sort_order?: number
+          translations?: Json
           updated_at?: string
           value?: string
         }
