@@ -22,8 +22,8 @@ export function QuantityOffers({ productName, normalPrice, enabled, offers, onTo
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"><span className="text-muted-foreground">Prix normal : {new Intl.NumberFormat('fr-DZ').format(normalPrice * o.quantity)} DA</span><strong>Pack : {new Intl.NumberFormat('fr-DZ').format(o.price)} DA</strong>{o.price > 0 && o.price <= normalPrice * o.quantity && <span className="text-muted-foreground">Économie : {new Intl.NumberFormat('fr-DZ').format(normalPrice * o.quantity - o.price)} DA</span>}</div>
       <details><summary className="cursor-pointer text-sm text-muted-foreground">Traductions EN / AR</summary><div className="mt-3 grid gap-3 sm:grid-cols-2">{(['en','ar'] as const).map(language => {
-        const labelKey = language === 'fr' ? 'label' : language === 'en' ? 'label_en' : 'label_ar';
-        const badgeKey = language === 'fr' ? 'badge' : language === 'en' ? 'badge_en' : 'badge_ar';
+        const labelKey = language === 'en' ? 'label_en' : 'label_ar';
+        const badgeKey = language === 'en' ? 'badge_en' : 'badge_ar';
         return <div key={language} className="space-y-2"><Label htmlFor={`label-${language}-${o.id}`}>Libellé ({language.toUpperCase()})</Label><Input id={`label-${language}-${o.id}`} maxLength={100} dir={language === 'ar' ? 'rtl' : 'ltr'} value={o[labelKey] ?? ''} onChange={e => update(o.id,{[labelKey]:e.target.value})}/><Label htmlFor={`badge-${language}-${o.id}`}>Badge ({language.toUpperCase()})</Label><Input id={`badge-${language}-${o.id}`} maxLength={60} dir={language === 'ar' ? 'rtl' : 'ltr'} value={o[badgeKey] ?? ''} onChange={e => update(o.id,{[badgeKey]:e.target.value})}/></div>;
       })}</div></details>
     </div>)}

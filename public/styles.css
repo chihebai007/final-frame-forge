@@ -54,7 +54,7 @@ html[dir=rtl] .story-text{direction:rtl}
 
 /* Saved photos are the only source; never show a preset while loading. */
 .hero-bottle:has(img[hidden]){display:none}
-.checkout-offers{margin:4px 0 16px}.checkout-offers legend{line-height:1.5}.checkout-offer-count{font-size:12px;color:var(--muted)}.checkout .offer-choice input[type=radio]{width:16px;padding:0;flex-shrink:0}.checkout .offer-choice{min-height:56px}
+.checkout-offers{margin:4px 0 20px;padding-bottom:16px;border-bottom:1px solid var(--offer-border)}.checkout-offers legend{line-height:1.5;font-size:16px}.checkout-offer-count{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:3px}.checkout .offer-choice input[type=radio]{width:16px;padding:0;flex-shrink:0}.checkout .offer-choice{min-height:56px}
 @media(max-width:400px){.checkout-offers .offer-choice{grid-template-columns:18px minmax(0,1fr)}.checkout-offers .offer-amount{grid-column:2;text-align:start}}
 /* UX polish: quantity hint, focus visibility, comfortable tap targets */
 .offer-qty{opacity:.7;font-weight:600;margin-inline-start:.25rem}
