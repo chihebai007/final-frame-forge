@@ -187,18 +187,11 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
     grid.innerHTML = list.map((p) => {
       const rv = productReviews(p.id);
       const avg = rv.length ? rv.reduce((s, r) => s + r.rating, 0) / rv.length : 0;
-      const offers = availableOffers(p);
-      const selected = selectedOffers.get(p.id) || '';
       return `<article class="product-card">
   ${safeUrl(p.image_url) ? `<div class="photo">${photo(p.image_url, pName(p))}</div>` : ""}
   <div class="body"><h3>${esc(pName(p))}</h3><div class="size">${esc(p.size)}</div>
   <button type="button" class="rating" data-reviews="${esc(p.id)}">${rv.length ? `<span class="stars">${stars(avg)}</span> ${avg.toFixed(1)} · ${rv.length} ${esc(tr("reviews"))}` : `<span class="stars dim">☆☆☆☆☆</span> ${esc(tr("no_review"))}`}</button>
   <p>${esc(pDesc(p))}</p><div class="stock">${esc(p.stock > 0 ? tr("in_stock") : tr("out"))}</div><div class="price">${p.old_price ? `<s class="old-price">${money(p.old_price)}</s> ${money(p.price)} <span class="discount-badge">-${p.discount}%</span>` : money(p.price)}</div>
-  ${offers.length ? `<fieldset class="quantity-offers"><legend>${esc(packText('choose'))}</legend><label class="offer-choice"><input type="radio" name="offer-${esc(p.id)}" data-offer-product="${esc(p.id)}" value="" ${!selected ? 'checked' : ''}><span>${esc(packText('unit'))}</span><b>${money(p.price)}</b></label>${offers.map(o => {
-    const badge = (lang !== 'fr' && o['badge_'+lang]) || o.badge || '';
-    const saving = Math.max(0,p.price*o.quantity-o.price);
-    return `<label class="offer-choice"><input type="radio" name="offer-${esc(p.id)}" data-offer-product="${esc(p.id)}" value="${esc(o.id)}" ${selected === o.id ? 'checked' : ''} ${p.stock < o.quantity ? 'disabled' : ''}><span>${esc(offerLabel(o))}${badge ? `<small class="offer-badge">${esc(badge)}</small>` : ''}</span><span class="offer-amount"><b>${money(o.price)}</b>${saving > 0 ? `<small>${money(saving)} ${esc(packText('saving'))}</small>` : ''}</span></label>`;
-  }).join('')}</fieldset>` : ''}
   <div class="card-actions"><button type="button" class="btn gold" data-buy="${esc(p.id)}" ${p.stock < 1 ? "disabled" : ""}>${esc(tr("buy"))}</button><button type="button" class="btn outline" data-add="${esc(p.id)}" ${p.stock < 1 ? "disabled" : ""}>${esc(tr("add"))}</button></div></div>
 </article>`;
     }).join("") || "<p>" + esc(tr("no_products")) + "</p>";
