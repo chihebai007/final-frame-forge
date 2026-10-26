@@ -286,7 +286,7 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
         const badge = (lang !== 'fr' && o['badge_'+lang]) || o.badge || '';
         const saving = Math.max(0,p.price*o.quantity-o.price);
         const disabled = otherQuantity + count * o.quantity > Math.min(p.stock,100);
-        return `<label class="offer-choice"><input type="radio" name="checkout-offer-${index}" data-checkout-line="${index}" value="${esc(o.id)}" ${offer_id === o.id ? 'checked' : ''} ${disabled ? 'disabled' : ''}><span>${esc(o.id ? offerLabel(o) : o.label)}${badge ? `<small class="offer-badge">${esc(badge)}</small>` : ''}</span><span class="offer-amount"><b>${money(o.price)}</b>${saving > 0 ? `<small>${money(saving)} ${esc(packText('saving'))}</small>` : ''}</span></label>`;
+        return `<label class="offer-choice"><input type="radio" name="checkout-offer-${index}" data-checkout-line="${index}" value="${esc(o.id)}" ${offer_id === o.id ? 'checked' : ''} ${disabled ? 'disabled' : ''}><span>${esc(o.id ? offerLabel(o) : o.label)}${o.id ? ` <small class="offer-qty">× ${o.quantity}</small>` : ''}${badge ? `<small class="offer-badge">${esc(badge)}</small>` : ''}</span><span class="offer-amount"><b>${money(o.price)}</b>${saving > 0 ? `<small>${money(saving)} ${esc(packText('saving'))}</small>` : ''}</span></label>`;
       }).join('')}${count > 1 ? `<div class="checkout-offer-count">${count} × ${esc(packText('choose'))} · ${q} ${esc(packText('unit'))} · ${money(pricing.total)}</div>` : ''}</fieldset>`;
     }).join('');
     updateShipping();
