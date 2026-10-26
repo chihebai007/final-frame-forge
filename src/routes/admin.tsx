@@ -265,7 +265,7 @@ function Products() {
     offers.forEach((o, i) => { src[`l${i}`] = o.label ?? ""; src[`b${i}`] = o.badge ?? ""; });
     const t = await autoTranslate(src);
     if (t) {
-      Object.assign(payload, { name_en: t.en.name, name_ar: t.ar.name, description_en: t.en.description, description_ar: t.ar.description,
+      Object.assign(payload, { name_en: t.en["name"], name_ar: t.ar["name"], description_en: t.en["description"], description_ar: t.ar["description"],
         quantity_offers: offers.map((o, i) => ({ ...o, label_en: t.en[`l${i}`], label_ar: t.ar[`l${i}`], badge_en: t.en[`b${i}`], badge_ar: t.ar[`b${i}`] })) });
     }
     const { error } = id ? await supabase.from("products").update(payload).eq("id", id) : await supabase.from("products").insert(payload);
