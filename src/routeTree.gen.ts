@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SiteDothtmlRouteImport } from './routes/site[.]html'
 import { Route as ApiArticlesRouteImport } from './routes/api/articles'
 import { Route as ApiAwardsRouteImport } from './routes/api/awards'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
@@ -35,6 +36,11 @@ const AdminRoute = AdminRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SiteDothtmlRoute = SiteDothtmlRouteImport.update({
+  id: '/site.html',
+  path: '/site.html',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiArticlesRoute = ApiArticlesRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/site.html': typeof SiteDothtmlRoute
   '/api/articles': typeof ApiArticlesRoute
   '/api/awards': typeof ApiAwardsRoute
   '/api/contact': typeof ApiContactRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/site.html': typeof SiteDothtmlRoute
   '/api/articles': typeof ApiArticlesRoute
   '/api/awards': typeof ApiAwardsRoute
   '/api/contact': typeof ApiContactRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/site.html': typeof SiteDothtmlRoute
   '/api/articles': typeof ApiArticlesRoute
   '/api/awards': typeof ApiAwardsRoute
   '/api/contact': typeof ApiContactRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/reset-password'
+    | '/site.html'
     | '/api/articles'
     | '/api/awards'
     | '/api/contact'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/reset-password'
+    | '/site.html'
     | '/api/articles'
     | '/api/awards'
     | '/api/contact'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/reset-password'
+    | '/site.html'
     | '/api/articles'
     | '/api/awards'
     | '/api/contact'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SiteDothtmlRoute: typeof SiteDothtmlRoute
   ApiArticlesRoute: typeof ApiArticlesRoute
   ApiAwardsRoute: typeof ApiAwardsRoute
   ApiContactRoute: typeof ApiContactRoute
@@ -207,6 +220,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/site.html': {
+      id: '/site.html'
+      path: '/site.html'
+      fullPath: '/site.html'
+      preLoaderRoute: typeof SiteDothtmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/articles': {
@@ -279,6 +299,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SiteDothtmlRoute: SiteDothtmlRoute,
   ApiArticlesRoute: ApiArticlesRoute,
   ApiAwardsRoute: ApiAwardsRoute,
   ApiContactRoute: ApiContactRoute,
