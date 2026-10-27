@@ -142,6 +142,7 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
     if (cachedOnly) {
       try { dbTexts = JSON.parse(localStorage.getItem("mitinan_texts_v1") || "{}") || {}; } catch { dbTexts = {}; }
       if (!Object.keys(dbTexts).length) return;
+      document.documentElement.classList.add("texts-ready");
     } else {
       try {
         dbTexts = await getJSON("/api/texts");
