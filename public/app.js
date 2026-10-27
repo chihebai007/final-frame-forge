@@ -140,9 +140,8 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
   // ---------- Données ----------
   async function loadTexts(cachedOnly) {
     if (cachedOnly) {
-      try { dbTexts = JSON.parse(localStorage.getItem("mitinan_texts_v1") || "{}") || {}; } catch { dbTexts = {}; }
+      dbTexts = globalThis.__MITINAN_TEXTS__ || {};
       if (!Object.keys(dbTexts).length) return;
-      document.documentElement.classList.add("texts-ready");
     } else {
       try {
         dbTexts = await getJSON("/api/texts");
