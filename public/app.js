@@ -138,8 +138,17 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
   }
 
   // ---------- Données ----------
-  async function loadTexts() {
-    try { dbTexts = await getJSON("/api/texts"); } catch (e) { console.warn("Textes non chargés", e); }
+  async function loadTexts(cachedOnly) {
+    if (cachedOnly) {
+      try { dbTexts = JSON.parse(localStorage.getItem("mitinan_texts_v1") || "{}") || {}; } catch { dbTexts = {}; }
+      if (!Object.keys(dbTexts).length) return;
+    } else {
+      try {
+        dbTexts = await getJSON("/api/texts");
+        try { localStorage.setItem("mitinan_texts_v1", JSON.stringify(dbTexts)); } catch { try { localStorage.setItem("mitinan_texts_v1", JSON.stringify(Object.fromEntries(Object.entries(dbTexts).filter(([k]) => !k.startsWith("image_"))))); } catch {} }
+      } catch (e) { console.warn("Textes non chargés", e); }
+      document.documentElement.classList.add("texts-ready");
+    }
     $$('[data-image]').forEach((el) => {
       const key = el.dataset.image;
       if (!(key in dbTexts)) return;
@@ -438,6 +447,7 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
 
   saveCart();
   recordVisit();
+  loadTexts(true);
   loadTexts();
   loadProducts();
   loadAwards();
