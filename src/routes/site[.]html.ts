@@ -35,10 +35,10 @@ export const Route = createFileRoute("/site.html")({
             db.from("articles").select("id,title,excerpt,image_url,translations").eq("published", true).order("created_at", { ascending: false }),
             db.from("awards").select("id,title,year,description,image_url,translations").eq("published", true).order("sort_order").order("created_at", { ascending: false }),
           ]);
-          if (!p.error) data.products = p.data;
-          if (!r.error) data.reviews = r.data;
-          if (!a.error) data.articles = a.data;
-          if (!w.error) data.awards = w.data;
+          if (!p.error) data["products"] = p.data;
+          if (!r.error) data["reviews"] = r.data;
+          if (!a.error) data["articles"] = a.data;
+          if (!w.error) data["awards"] = w.data;
         } catch (e) {
           console.error(e);
         }
