@@ -26,8 +26,27 @@ export const Route = createFileRoute("/site.html")({
           (m, open: string, _tag, key: string, _txt, close: string) =>
             texts[key] && texts[key].trim() ? open + esc(texts[key]) + close : m,
         );
-        const payload = JSON.stringify(texts).replace(/</g, "\\u003c");
-        html = html.replace("</head>", `<script>window.__MITINAN_TEXTS__=${payload}</script>\n</head>`);
+        const db = publicDb();
+        const data: Record<string, unknown> = {};
+        try {
+          const [p, r, a, w] = await Promise.all([
+            db.from("products").select("id,name,name_ar,name_en,description,description_ar,description_en,price,sale_price,stock,size,category,image_url,packs_enabled,quantity_offers").eq("active", true).order("sort_order").order("created_at"),
+            db.from("reviews").select("id,product_id,name,rating,comment,created_at").eq("approved", true).order("created_at", { ascending: false }).limit(500),
+            db.from("articles").select("id,title,excerpt,image_url,translations").eq("published", true).order("created_at", { ascending: false }),
+            db.from("awards").select("id,title,year,description,image_url,translations").eq("published", true).order("sort_order").order("created_at", { ascending: false }),
+          ]);
+          if (!p.error) data.products = p.data;
+          if (!r.error) data.reviews = r.data;
+          if (!a.error) data.articles = a.data;
+          if (!w.error) data.awards = w.data;
+        } catch (e) {
+          console.error(e);
+        }
+        const safe = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
+        html = html.replace(
+          "</head>",
+          `<script>window.__MITINAN_TEXTS__=${safe(texts)};window.__MITINAN_DATA__=${safe(data)}</script>\n</head>`,
+        );
         return new Response(html, {
           headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
         });
