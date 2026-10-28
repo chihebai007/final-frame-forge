@@ -166,7 +166,8 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
   }
   async function loadProducts() {
     try {
-      const [p, r] = await Promise.all([getJSON("/api/products"), getJSON("/api/reviews").catch(() => [])]);
+      const pre = globalThis.__MITINAN_DATA__ || {};
+      const [p, r] = await Promise.all([pre.products || getJSON("/api/products"), pre.reviews || getJSON("/api/reviews").catch(() => [])]);
       products = p.map((x) => {
         const base = Number(x.price), sale = Number(x.sale_price);
         return sale > 0 && sale < base ? { ...x, base_price:base, price: sale, old_price: base, discount: Math.round((1 - sale / base) * 100) } : { ...x, base_price:base, price: base };
@@ -209,12 +210,12 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
   }
 
   let awards = null, articles = null;
-  async function loadAwards() { try { awards = await getJSON("/api/awards"); } catch { awards = []; } renderAwards(); }
+  async function loadAwards() { try { awards = (globalThis.__MITINAN_DATA__||{}).awards || await getJSON("/api/awards"); } catch { awards = []; } renderAwards(); }
   function renderAwards() {
     if (!awards) return;
     $("#awardGrid").innerHTML = awards.map((a) => `<article class="award-card">${photo(a.image_url, tx(a,"title"))}<div class="body">${a.year ? `<small>${esc(a.year)}</small>` : ""}<h3>${esc(tx(a,"title"))}</h3><p>${esc(tx(a,"description"))}</p></div></article>`).join("") || `<p class="empty">${esc(tr("no_awards"))}</p>`;
   }
-  async function loadArticles() { try { articles = await getJSON("/api/articles"); } catch { articles = []; } renderArticles(); }
+  async function loadArticles() { try { articles = (globalThis.__MITINAN_DATA__||{}).articles || await getJSON("/api/articles"); } catch { articles = []; } renderArticles(); }
   function renderArticles() {
     if (!articles) return;
     $("#articleGrid").innerHTML = articles.map((x) => `<article class="article-card">${photo(x.image_url, tx(x,"title"))}<div class="body"><small>MITINAN</small><h3>${esc(tx(x,"title"))}</h3><p>${esc(tx(x,"excerpt"))}</p></div></article>`).join("") || "<p>" + esc(tr("no_articles")) + "</p>";
