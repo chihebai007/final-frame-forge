@@ -21,10 +21,15 @@ export function Team() {
     setBusy(true);
     try {
       const data = action === 'grant' ? { action, email, password, replacePassword } : action === 'revoke' && id ? { action, id } : { action: 'list' as const };
-      setList(await call({ data }));
+      const result = await call({ data });
+      setList(result.members);
       if (action === 'grant') { setCredentials({ email: email.trim(), password }); setPassword(''); setEmail(''); setReplacePassword(false); setShowPassword(false); }
       if (action === 'revoke') setCredentials(null);
-      if (action !== 'list') toast.success(action === 'grant' ? 'Accès accordé : transmettez les identifiants au manager' : 'Accès manager retiré');
+      if (action === 'grant') {
+        if (result.emailStatus === 'sent') toast.success('Accès accordé. Email de changement de mot de passe envoyé au manager.');
+        else toast.warning('Accès accordé, mais l’email n’a pas pu être envoyé. Le manager peut utiliser « Mot de passe oublié ? » sur la page de connexion.');
+      }
+      if (action === 'revoke') toast.success('Accès manager retiré');
     }
     catch (e) { toast.error(e instanceof Error ? e.message : 'Opération impossible'); }
     finally { setBusy(false); }
@@ -46,8 +51,8 @@ export function Team() {
       <p className="font-semibold">Connexion du manager</p>
       <ol className="list-decimal space-y-1 ps-5">
         <li>Le manager garde son email personnel. Vous saisissez cet email ici et choisissez son mot de passe d’accès à la boutique.</li>
-        <li>Vous lui transmettez uniquement ce mot de passe et le lien en privé ; aucun email d’invitation n’est nécessaire.</li>
-        <li>Il se connecte ensuite ici avec son email et ce mot de passe : <span className="break-all font-medium">{loginUrl}</span></li>
+        <li>À chaque accès accordé ou mot de passe remplacé, il reçoit un email avec un lien sécurisé pour choisir son propre mot de passe. Le mot de passe saisi ici n’est jamais envoyé par email.</li>
+        <li>Après avoir enregistré son nouveau mot de passe, il accède à la boutique ici : <span className="break-all font-medium">{loginUrl}</span></li>
         <li>Il peut gérer commandes, produits, avis, livraison et messages. Si vous retirez l’accès, il ne peut plus rien gérer jusqu’à ce que vous lui redonniez accès.</li>
       </ol>
     </div>

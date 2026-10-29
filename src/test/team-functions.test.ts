@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ createUser: vi.fn(), updateUserById: vi.fn(), listUsers: vi.fn(), from: vi.fn(), rpc: vi.fn(), insert: vi.fn() }));
+const mocks = vi.hoisted(() => ({ createUser: vi.fn(), updateUserById: vi.fn(), listUsers: vi.fn(), from: vi.fn(), rpc: vi.fn(), insert: vi.fn(), resetPasswordForEmail: vi.fn() }));
+vi.mock('@tanstack/react-start/server', () => ({ getRequest: () => new Request('https://mitinan.example/admin') }));
 vi.mock('@tanstack/react-start', () => ({ createServerFn: () => ({ middleware: () => ({ inputValidator: (parse: (input: unknown) => unknown) => ({ handler: (handler: (input: unknown) => unknown) => (input: { data: unknown; context: unknown }) => handler({ ...input, data: parse(input.data) }) }) }) }) }));
 vi.mock('@/integrations/supabase/auth-middleware', () => ({ requireSupabaseAuth: {} }));
-vi.mock('@/integrations/supabase/client.server', () => ({ supabaseAdmin: { from: mocks.from, auth: { admin: { createUser: mocks.createUser, updateUserById: mocks.updateUserById, listUsers: mocks.listUsers, getUserById: vi.fn() } } } }));
+vi.mock('@/integrations/supabase/client.server', () => ({ supabaseAdmin: { from: mocks.from, auth: { resetPasswordForEmail: mocks.resetPasswordForEmail, admin: { createUser: mocks.createUser, updateUserById: mocks.updateUserById, listUsers: mocks.listUsers, getUserById: vi.fn() } } } }));
 import { manageTeam } from '../lib/team.functions';
 
 // The mocked builder exposes the handler context to exercise authorization.
@@ -17,6 +18,7 @@ beforeEach(() => {
   mocks.createUser.mockResolvedValue({ data: { user: { id: 'manager-id' } } });
   mocks.updateUserById.mockResolvedValue({ error: null });
   mocks.insert.mockResolvedValue({ error: null });
+  mocks.resetPasswordForEmail.mockResolvedValue({ error: null });
   mocks.from.mockReturnValue({ select: () => ({ eq: (_key: string, value: string) => Promise.resolve({ data: value === 'manager' ? [] : [], error: null }) }), insert: mocks.insert });
 });
 describe('Manager credentials', () => {
@@ -26,7 +28,7 @@ describe('Manager credentials', () => {
     expect(mocks.createUser).not.toHaveBeenCalled();
   });
   it('creates a directly usable account with the supplied credentials', async () => {
-    expect(await run({ data: grant, context })).toEqual([]);
+    expect(await run({ data: grant, context })).toEqual({ members: [], emailStatus: 'sent' });
     expect(mocks.createUser).toHaveBeenCalledWith({ email: grant.email, password: grant.password, email_confirm: true });
     expect(mocks.insert).toHaveBeenCalledWith({ user_id: 'manager-id', role: 'manager' });
   });
@@ -35,6 +37,7 @@ describe('Manager credentials', () => {
     await expect(run({ data: grant, context })).rejects.toThrow('Confirmez');
     expect(mocks.updateUserById).not.toHaveBeenCalled();
     expect(mocks.insert).not.toHaveBeenCalled();
+    expect(mocks.resetPasswordForEmail).not.toHaveBeenCalled();
   });
   it('regrants access with newly supplied credentials after confirmation', async () => {
     mocks.listUsers.mockResolvedValue({ data: { users: [{ id: 'manager-id', email: grant.email }] } });
@@ -47,5 +50,23 @@ describe('Manager credentials', () => {
     mocks.from.mockReturnValue({ select: () => ({ eq: () => Promise.resolve({ data: [{ role: 'admin' }], error: null }) }) });
     await expect(run({ data: { ...grant, replacePassword: true }, context })).rejects.toThrow('déjà administrateur');
     expect(mocks.updateUserById).not.toHaveBeenCalled();
+  });
+  it('sends a secure change-password link after every successful access grant', async () => {
+    await run({ data: grant, context });
+    await run({ data: grant, context });
+    expect(mocks.resetPasswordForEmail).toHaveBeenCalledTimes(2);
+    expect(mocks.resetPasswordForEmail).toHaveBeenLastCalledWith(grant.email, { redirectTo: 'https://mitinan.example/reset-password' });
+  });
+  it('sends a change-password email after an existing manager password is replaced', async () => {
+    mocks.listUsers.mockResolvedValue({ data: { users: [{ id: 'manager-id', email: grant.email }] } });
+    mocks.from.mockReturnValue({ select: () => ({ eq: (_key: string, value: string) => Promise.resolve({ data: value === 'manager' ? [] : [{ role: 'manager' }], error: null }) }), insert: mocks.insert });
+    await run({ data: { ...grant, replacePassword: true }, context });
+    expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith(grant.email, { redirectTo: 'https://mitinan.example/reset-password' });
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+  it('reports email failure without undoing granted access', async () => {
+    mocks.resetPasswordForEmail.mockResolvedValue({ error: { message: 'Email unavailable' } });
+    expect(await run({ data: grant, context })).toEqual({ members: [], emailStatus: 'failed' });
+    expect(mocks.insert).toHaveBeenCalledWith({ user_id: 'manager-id', role: 'manager' });
   });
 });
