@@ -13,4 +13,5 @@
 - [x] Tester site et admin sur ordinateur, tablette, téléphone ; retouches UX/UI ; traduction automatique FR → EN/AR.
 - [x] Simplifier les réglages des packs et vérifier les offres séparées par produit dans la commande.
 - [x] Simplifier et vérifier l’accès manager avec son email personnel et le mot de passe fourni par l’administrateur.
-- [ ] Envoyer et vérifier un email de changement de mot de passe après chaque attribution d’accès ou remplacement de mot de passe manager.
+- [x] Déclencher et tester l’email de changement de mot de passe après chaque attribution d’accès ou remplacement de mot de passe manager.
+- [ ] Confirmer la réception par un vrai manager : l’adresse temporaire de test ne peut pas recevoir d’emails ; vérification dans sa boîte nécessaire.
