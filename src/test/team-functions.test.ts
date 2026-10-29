@@ -28,7 +28,7 @@ describe('Manager credentials', () => {
     expect(mocks.createUser).not.toHaveBeenCalled();
   });
   it('creates a directly usable account with the supplied credentials', async () => {
-    expect(await run({ data: grant, context })).toEqual({ members: [], emailStatus: 'sent' });
+    expect(await run({ data: grant, context })).toEqual({ members: [], emailStatus: 'not_configured' });
     expect(mocks.createUser).toHaveBeenCalledWith({ email: grant.email, password: grant.password, email_confirm: true });
     expect(mocks.insert).toHaveBeenCalledWith({ user_id: 'manager-id', role: 'manager' });
   });
@@ -51,22 +51,20 @@ describe('Manager credentials', () => {
     await expect(run({ data: { ...grant, replacePassword: true }, context })).rejects.toThrow('déjà administrateur');
     expect(mocks.updateUserById).not.toHaveBeenCalled();
   });
-  it('sends a secure change-password link after every successful access grant', async () => {
+  it('never sends password-reset emails when granting access', async () => {
     await run({ data: grant, context });
     await run({ data: grant, context });
-    expect(mocks.resetPasswordForEmail).toHaveBeenCalledTimes(2);
-    expect(mocks.resetPasswordForEmail).toHaveBeenLastCalledWith(grant.email, { redirectTo: 'https://mitinan.example/reset-password' });
+    expect(mocks.resetPasswordForEmail).not.toHaveBeenCalled();
   });
-  it('sends a change-password email after an existing manager password is replaced', async () => {
+  it('never sends password-reset emails when replacing a manager password', async () => {
     mocks.listUsers.mockResolvedValue({ data: { users: [{ id: 'manager-id', email: grant.email }] } });
     mocks.from.mockReturnValue({ select: () => ({ eq: (_key: string, value: string) => Promise.resolve({ data: value === 'manager' ? [] : [{ role: 'manager' }], error: null }) }), insert: mocks.insert });
     await run({ data: { ...grant, replacePassword: true }, context });
-    expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith(grant.email, { redirectTo: 'https://mitinan.example/reset-password' });
+    expect(mocks.resetPasswordForEmail).not.toHaveBeenCalled();
     expect(mocks.insert).not.toHaveBeenCalled();
   });
-  it('reports email failure without undoing granted access', async () => {
-    mocks.resetPasswordForEmail.mockResolvedValue({ error: { message: 'Email unavailable' } });
-    expect(await run({ data: grant, context })).toEqual({ members: [], emailStatus: 'failed' });
+  it('reports missing email setup without undoing granted access or returning the password', async () => {
+    expect(await run({ data: grant, context })).toEqual({ members: [], emailStatus: 'not_configured' });
     expect(mocks.insert).toHaveBeenCalledWith({ user_id: 'manager-id', role: 'manager' });
   });
 });
