@@ -1,7 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
-import { getRequest } from '@tanstack/react-start/server';
 
 export const manageTeam = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
@@ -14,7 +13,7 @@ export const manageTeam = createServerFn({ method: 'POST' })
     const { data: admin } = await context.supabase.rpc('has_role', { _user_id: context.userId, _role: 'admin' });
     if (admin !== true) throw new Error('Accès réservé à l’administrateur');
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-    let emailStatus: 'sent' | 'failed' | null = null;
+    let emailStatus: 'not_configured' | null = null;
     if (data.action === 'revoke') {
       if (!data.id || data.id === context.userId) throw new Error('Compte invalide');
       const { error } = await supabaseAdmin.from('user_roles').delete().eq('user_id', data.id).eq('role', 'manager');
@@ -47,13 +46,10 @@ export const manageTeam = createServerFn({ method: 'POST' })
         const { error } = await supabaseAdmin.from('user_roles').insert({ user_id: userId, role: 'manager' });
         if (error) throw new Error('Attribution impossible');
       }
-      // Auth recovery emails use the default sender even without a custom email domain.
+      // Access notices are app emails, not auth recovery emails. Sending is blocked
+      // until an owned sender domain and the managed app-email helper are configured.
       // Never send the administrator-supplied password in an email.
-      try {
-        const redirectTo = `${new URL(getRequest().url).origin}/reset-password`;
-        const { error } = await supabaseAdmin.auth.resetPasswordForEmail(data.email, { redirectTo });
-        emailStatus = error ? 'failed' : 'sent';
-      } catch { emailStatus = 'failed'; }
+      emailStatus = 'not_configured';
     }
     const { data: roles, error } = await supabaseAdmin.from('user_roles').select('user_id').eq('role', 'manager');
     if (error) throw new Error('Chargement impossible');

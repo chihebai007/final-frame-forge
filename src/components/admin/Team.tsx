@@ -26,8 +26,7 @@ export function Team() {
       if (action === 'grant') { setCredentials({ email: email.trim(), password }); setPassword(''); setEmail(''); setReplacePassword(false); setShowPassword(false); }
       if (action === 'revoke') setCredentials(null);
       if (action === 'grant') {
-        if (result.emailStatus === 'sent') toast.success('Accès accordé. Email de changement de mot de passe envoyé au manager.');
-        else toast.warning('Accès accordé, mais l’email n’a pas pu être envoyé. Le manager peut utiliser « Mot de passe oublié ? » sur la page de connexion.');
+        toast.warning('Accès accordé. Email non envoyé : configurez le domaine d’envoi. Transmettez le lien et le mot de passe en privé.');
       }
       if (action === 'revoke') toast.success('Accès manager retiré');
     }
@@ -51,8 +50,8 @@ export function Team() {
       <p className="font-semibold">Connexion du manager</p>
       <ol className="list-decimal space-y-1 ps-5">
         <li>Le manager garde son email personnel. Vous saisissez cet email ici et choisissez son mot de passe d’accès à la boutique.</li>
-        <li>À chaque accès accordé ou mot de passe remplacé, il reçoit un email avec un lien sécurisé pour choisir son propre mot de passe. Le mot de passe saisi ici n’est jamais envoyé par email.</li>
-        <li>Après avoir enregistré son nouveau mot de passe, il accède à la boutique ici : <span className="break-all font-medium">{loginUrl}</span></li>
+        <li>Transmettez-lui le mot de passe en privé. Aucun email de réinitialisation n’est envoyé lorsque vous accordez l’accès ou remplacez le mot de passe.</li>
+        <li>Il se connecte avec son email personnel et le mot de passe fourni ici : <span className="break-all font-medium">{loginUrl}</span></li>
         <li>Il peut gérer commandes, produits, avis, livraison et messages. Si vous retirez l’accès, il ne peut plus rien gérer jusqu’à ce que vous lui redonniez accès.</li>
       </ol>
     </div>

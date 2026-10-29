@@ -13,5 +13,6 @@
 - [x] Tester site et admin sur ordinateur, tablette, téléphone ; retouches UX/UI ; traduction automatique FR → EN/AR.
 - [x] Simplifier les réglages des packs et vérifier les offres séparées par produit dans la commande.
 - [x] Simplifier et vérifier l’accès manager avec son email personnel et le mot de passe fourni par l’administrateur.
-- [x] Déclencher et tester l’email de changement de mot de passe après chaque attribution d’accès ou remplacement de mot de passe manager.
-- [ ] Confirmer la réception par un vrai manager : l’adresse temporaire de test ne peut pas recevoir d’emails ; vérification dans sa boîte nécessaire.
+- [x] Retirer et tester l’absence d’email de réinitialisation lors de l’attribution d’accès ou du remplacement de mot de passe manager.
+- [ ] Envoyer un email d’information avec lien de connexion à chaque accès accordé ou mot de passe remplacé — bloqué : domaine d’envoi non configuré.
+- [ ] Ajouter les notifications des nouvelles commandes et messages pour l’administrateur et les managers autorisés — bloqué : domaine d’envoi non configuré.
