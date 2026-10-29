@@ -16,3 +16,4 @@
 - [x] Retirer et tester l’absence d’email de réinitialisation lors de l’attribution d’accès ou du remplacement de mot de passe manager.
 - [ ] Envoyer un email d’information avec lien de connexion à chaque accès accordé ou mot de passe remplacé — bloqué : domaine d’envoi non configuré.
 - [ ] Ajouter les notifications des nouvelles commandes et messages pour l’administrateur et les managers autorisés — bloqué : domaine d’envoi non configuré.
+- [ ] Vérifier les produits, photos, articles et médailles visibles dans le HTML dès l’ouverture, sans attendre les scripts.
