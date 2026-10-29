@@ -1,11 +1,14 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
-import { getRequest } from '@tanstack/react-start/server';
 
 export const manageTeam = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ action: z.enum(['list', 'grant', 'revoke']), email: z.string().email().optional(), id: z.string().uuid().optional() }).parse(input))
+  .inputValidator((input) => z.discriminatedUnion('action', [
+    z.object({ action: z.literal('list') }),
+    z.object({ action: z.literal('revoke'), id: z.string().uuid() }),
+    z.object({ action: z.literal('grant'), email: z.string().trim().email(), password: z.string().min(12, 'Utilisez au moins 12 caractères').max(128), replacePassword: z.boolean().default(false) }),
+  ]).parse(input))
   .handler(async ({ data, context }) => {
     const { data: admin } = await context.supabase.rpc('has_role', { _user_id: context.userId, _role: 'admin' });
     if (admin !== true) throw new Error('Accès réservé à l’administrateur');
@@ -24,22 +27,23 @@ export const manageTeam = createServerFn({ method: 'POST' })
         userId = result.users.find((u) => u.email?.toLowerCase() === data.email?.toLowerCase())?.id;
         if (userId || result.users.length < 100) break;
       }
-      const redirectTo = `${new URL(getRequest().url).origin}/reset-password`;
+      const foundExistingUser = Boolean(userId);
       if (!userId) {
-        const { data: invitation, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, { redirectTo });
-        if (error || !invitation.user) throw new Error('Invitation impossible. Réessayez ou utilisez un compte existant.');
-        userId = invitation.user.id;
+        const { data: created, error } = await supabaseAdmin.auth.admin.createUser({ email: data.email, password: data.password, email_confirm: true });
+        if (error || !created.user) throw new Error('Création impossible. Vérifiez l’email et utilisez un mot de passe suffisamment fort.');
+        userId = created.user.id;
       }
-      const { data: existing } = await supabaseAdmin.from('user_roles').select('role').eq('user_id', userId);
+      const { data: existing, error: roleError } = await supabaseAdmin.from('user_roles').select('role').eq('user_id', userId);
+      if (roleError) throw new Error('Vérification des accès impossible');
       if (existing?.some((r) => r.role === 'admin')) throw new Error('Ce compte est déjà administrateur');
+      if (foundExistingUser) {
+        if (!data.replacePassword) throw new Error('Ce compte existe déjà. Confirmez le remplacement de son mot de passe pour lui fournir les nouveaux identifiants.');
+        const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, { password: data.password, email_confirm: true });
+        if (error) throw new Error('Modification du mot de passe impossible. Utilisez un mot de passe suffisamment fort.');
+      }
       if (!existing?.some((r) => r.role === 'manager')) {
         const { error } = await supabaseAdmin.from('user_roles').insert({ user_id: userId, role: 'manager' });
         if (error) throw new Error('Attribution impossible');
-      }
-      if (existing) {
-        // Existing account (e.g. access given again after removal): send a fresh connection email.
-        const { error } = await supabaseAdmin.auth.resetPasswordForEmail(data.email, { redirectTo });
-        if (error) throw new Error('Accès accordé, mais l’email de connexion n’a pas pu être envoyé. Réessayez dans quelques minutes.');
       }
     }
     const { data: roles, error } = await supabaseAdmin.from('user_roles').select('user_id').eq('role', 'manager');
