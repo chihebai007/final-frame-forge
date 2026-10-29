@@ -16,15 +16,20 @@ export const Route = createFileRoute("/site.html")({
           for (const t of data ?? []) {
             texts[t.key] = t.value;
             const tr = (t.translations ?? {}) as Record<string, unknown>;
-            for (const l of ["en", "ar"]) if (typeof tr[l] === "string" && tr[l]) texts[`${t.key}__${l}`] = tr[l] as string;
+            for (const l of ["en", "ar"]) {
+              const translation = tr[l];
+              if (typeof translation === "string" && translation) texts[`${t.key}__${l}`] = translation;
+            }
           }
         } catch (e) {
           console.error(e);
         }
         let html = template.replace(
           /(<(\w+)\b[^>]*\bdata-t="([\w-]+)"[^>]*>)([^<]*)(<\/\2>)/g,
-          (m, open: string, _tag, key: string, _txt, close: string) =>
-            texts[key] && texts[key].trim() ? open + esc(texts[key]) + close : m,
+          (m: string, open: string, _tag: string, key: string, _txt: string, close: string) => {
+            const text = texts[key];
+            return text && text.trim() ? open + esc(text) + close : m;
+          },
         );
         const db = publicDb();
         const data: Record<string, unknown> = {};
