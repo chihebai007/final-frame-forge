@@ -22,4 +22,5 @@
 - Keep the pack editor scoped to its parent product and collapse secondary translation fields; this keeps the primary price and quantity controls unambiguous.
 
 - Render fixed public photos only from saved `image_` settings, without HTML/CSS preset sources, so refreshes and failed reads cannot resurrect old or removed photos.
+- Render public product, article and award cards plus fixed image sources into the initial HTML using the shared image validator; injected data alone does not provide immediate visible content before browser scripts run.
 - Admin saves re-translate French content to EN/AR through the staff-only translateFields server function (site_texts/articles/awards store it in a translations jsonb; products use name_*/description_* and pack label_*/badge_*), and saving still succeeds if translation fails.

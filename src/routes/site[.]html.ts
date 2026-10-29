@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import template from "../site-template.html?raw";
 import { publicDb } from "@/lib/public-db.server";
+import { renderInitialContent } from '@/lib/site-render';
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -44,6 +45,7 @@ export const Route = createFileRoute("/site.html")({
           if (!r.error) data["reviews"] = r.data;
           if (!a.error) data["articles"] = a.data;
           if (!w.error) data["awards"] = w.data;
+          html = renderInitialContent(html, texts, p.data ?? [], r.data ?? [], a.data ?? [], w.data ?? []);
         } catch (e) {
           console.error(e);
         }
