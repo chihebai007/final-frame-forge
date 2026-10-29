@@ -61,3 +61,5 @@ html[dir=rtl] .story-text{direction:rtl}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 @media (max-width:650px){.btn{min-height:44px}.langs button{min-width:40px;min-height:36px}}
 html{scroll-behavior:smooth}section[id]{scroll-margin-top:80px}
+@media(max-width:1000px){.hero{min-height:560px}.hero:before{opacity:1;background-position:65% 40%;transform:none}.hero-overlay{background:linear-gradient(180deg,rgba(5,20,31,.55) 0%,rgba(5,20,31,.7) 55%,rgba(5,20,31,.85) 100%)}}
+@media(max-width:650px){.hero{min-height:calc(100svh - 70px)}.hero:before{opacity:1;background-position:70% center}.hero-overlay{background:linear-gradient(180deg,rgba(5,20,31,.45) 0%,rgba(5,20,31,.7) 50%,rgba(5,20,31,.88) 100%)}}
