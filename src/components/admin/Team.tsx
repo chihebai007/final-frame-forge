@@ -33,7 +33,7 @@ export function Team() {
   async function copyCredentials() {
     if (!credentials) return;
     try {
-      await navigator.clipboard.writeText(`Connexion à la boutique MITINAN\nLien : ${loginUrl}\nEmail : ${credentials.email}\nMot de passe : ${credentials.password}\nCes informations sont personnelles : ne les partagez pas.`);
+      await navigator.clipboard.writeText(`Connexion à la boutique MITINAN\nLien : ${loginUrl}\nUtilisez votre email personnel habituel.\nMot de passe pour la boutique : ${credentials.password}\nCe mot de passe concerne uniquement la boutique, pas votre messagerie. Ne le partagez pas.`);
       toast.success('Identifiants copiés : transmettez-les en privé');
     } catch { toast.error('Copie impossible : transmettez les informations affichées en privé.'); }
   }
@@ -45,19 +45,19 @@ export function Team() {
     <div className="space-y-2 rounded-md border bg-muted/40 p-4 text-sm">
       <p className="font-semibold">Connexion du manager</p>
       <ol className="list-decimal space-y-1 ps-5">
-        <li>Vous choisissez son email et son mot de passe, puis vous lui donnez accès.</li>
-        <li>Vous lui transmettez les identifiants en privé ; aucun email d’invitation n’est nécessaire.</li>
+        <li>Le manager garde son email personnel. Vous saisissez cet email ici et choisissez son mot de passe d’accès à la boutique.</li>
+        <li>Vous lui transmettez uniquement ce mot de passe et le lien en privé ; aucun email d’invitation n’est nécessaire.</li>
         <li>Il se connecte ensuite ici avec son email et ce mot de passe : <span className="break-all font-medium">{loginUrl}</span></li>
         <li>Il peut gérer commandes, produits, avis, livraison et messages. Si vous retirez l’accès, il ne peut plus rien gérer jusqu’à ce que vous lui redonniez accès.</li>
       </ol>
     </div>
     <form className="space-y-3 border-b pb-6" onSubmit={(e: FormEvent) => { e.preventDefault(); void run('grant'); }}>
-      <Label htmlFor="manager-email">Email du manager</Label>
+      <Label htmlFor="manager-email">Email personnel du manager</Label>
       <Input id="manager-email" type="email" autoComplete="off" required value={email} onChange={(e) => { setCredentials(null); setEmail(e.target.value); }} />
-      <Label htmlFor="manager-password">Mot de passe du manager</Label>
+      <Label htmlFor="manager-password">Mot de passe d’accès à la boutique</Label>
       <div className="flex gap-2"><Input id="manager-password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" minLength={12} maxLength={128} required value={password} onChange={(e) => setPassword(e.target.value)} /><Button type="button" variant="outline" size="icon" title={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff /> : <Eye />}</Button><Button type="button" variant="outline" size="icon" title="Générer un mot de passe" aria-label="Générer un mot de passe" onClick={generatePassword}><RefreshCw /></Button></div>
-      <p className="text-sm text-muted-foreground">Au moins 12 caractères. Le mot de passe ne sera pas consultable plus tard.</p>
-      <div className="flex items-start gap-2"><Checkbox id="replace-manager-password" checked={replacePassword} onCheckedChange={(v) => setReplacePassword(v === true)} /><Label htmlFor="replace-manager-password" className="leading-normal">Si ce compte existe déjà, je confirme le remplacement de son mot de passe par celui saisi.</Label></div>
+      <p className="text-sm text-muted-foreground">Au moins 12 caractères. Ce mot de passe concerne seulement la boutique, pas sa messagerie. Il ne sera pas consultable plus tard.</p>
+      <div className="flex items-start gap-2"><Checkbox id="replace-manager-password" checked={replacePassword} onCheckedChange={(v) => setReplacePassword(v === true)} /><Label htmlFor="replace-manager-password" className="leading-normal">Si ce compte existe déjà dans la boutique, je confirme le remplacement de son mot de passe d’accès par celui saisi.</Label></div>
       <Button disabled={busy}>{busy ? 'Veuillez patienter…' : 'Donner accès'}</Button>
     </form>
     {credentials && <div className="space-y-3 border-b pb-6"><h3 className="font-semibold">Identifiants à transmettre en privé</h3><dl className="grid gap-2 text-sm"><div><dt className="text-muted-foreground">Lien de connexion</dt><dd className="break-all">{loginUrl}</dd></div><div><dt className="text-muted-foreground">Email</dt><dd className="break-all">{credentials.email}</dd></div><div><dt className="text-muted-foreground">Mot de passe</dt><dd className="break-all font-mono">{credentials.password}</dd></div></dl><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => void copyCredentials()}><Copy />Copier les identifiants</Button><Button variant="ghost" onClick={() => setCredentials(null)}>Masquer les identifiants</Button></div></div>}

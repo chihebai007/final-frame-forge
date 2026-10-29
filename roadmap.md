@@ -12,4 +12,4 @@
 - [x] Ajouter et vérifier le choix des offres dans le formulaire de commande avec recalcul du total.
 - [x] Tester site et admin sur ordinateur, tablette, téléphone ; retouches UX/UI ; traduction automatique FR → EN/AR.
 - [x] Simplifier les réglages des packs et vérifier les offres séparées par produit dans la commande.
-- [ ] Simplifier et vérifier l’accès manager avec identifiants fournis par l’administrateur.
+- [x] Simplifier et vérifier l’accès manager avec son email personnel et le mot de passe fourni par l’administrateur.
