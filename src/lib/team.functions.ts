@@ -24,8 +24,9 @@ export const manageTeam = createServerFn({ method: 'POST' })
         userId = result.users.find((u) => u.email?.toLowerCase() === data.email?.toLowerCase())?.id;
         if (userId || result.users.length < 100) break;
       }
+      const redirectTo = `${new URL(getRequest().url).origin}/reset-password`;
       if (!userId) {
-        const { data: invitation, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, { redirectTo: `${new URL(getRequest().url).origin}/reset-password` });
+        const { data: invitation, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, { redirectTo });
         if (error || !invitation.user) throw new Error('Invitation impossible. Réessayez ou utilisez un compte existant.');
         userId = invitation.user.id;
       }
@@ -34,6 +35,11 @@ export const manageTeam = createServerFn({ method: 'POST' })
       if (!existing?.some((r) => r.role === 'manager')) {
         const { error } = await supabaseAdmin.from('user_roles').insert({ user_id: userId, role: 'manager' });
         if (error) throw new Error('Attribution impossible');
+      }
+      if (existing) {
+        // Existing account (e.g. access given again after removal): send a fresh connection email.
+        const { error } = await supabaseAdmin.auth.resetPasswordForEmail(data.email, { redirectTo });
+        if (error) throw new Error('Accès accordé, mais l’email de connexion n’a pas pu être envoyé. Réessayez dans quelques minutes.');
       }
     }
     const { data: roles, error } = await supabaseAdmin.from('user_roles').select('user_id').eq('role', 'manager');
