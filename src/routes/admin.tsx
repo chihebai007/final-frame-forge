@@ -460,8 +460,12 @@ function Texts() {
     return;
   }
   return (
-    <div className="space-y-4 rounded-lg border bg-card p-6">
-      {list.map((t) => (
+    <div className="space-y-6">
+      <section aria-label="Nos produits" className="space-y-4 border-b pb-6">
+        <h2 className="text-xl font-semibold">Nos produits</h2>
+        {list.filter((t) => ["products_eyebrow", "products_title", "products_text", "see_range", "extra_eyebrow", "extra_title", "extra_text", "extra_button", "virgin_eyebrow", "virgin_title", "virgin_text", "virgin_button"].includes(t.key)).map((t) => <div key={t.key} className="space-y-1"><Label htmlFor={`site-text-${t.key}`}>{t.label}</Label><Textarea id={`site-text-${t.key}`} value={draft[t.key] ?? ""} onChange={(e) => setDraft({ ...draft, [t.key]: e.target.value })} /></div>)}
+      </section>
+      {list.filter((t) => !["products_eyebrow", "products_title", "products_text", "see_range", "extra_eyebrow", "extra_title", "extra_text", "extra_button", "virgin_eyebrow", "virgin_title", "virgin_text", "virgin_button"].includes(t.key)).map((t) => (
         <div key={t.key} className="space-y-1">
           <Label>{t.label}</Label>
           {t.value.length > 60
