@@ -80,3 +80,13 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:80px}
 @media(min-width:1001px){.burger{display:none}}
 @media(max-width:1000px){.topbar{gap:16px}.logo-brand{width:124px}.logo-brand img{width:124px;height:auto}.logo-brand::before{height:120px;left:-12px;right:-12px}body.menu-open nav{top:84px}}
 @media(max-width:650px){.topbar{height:68px;min-height:68px;flex-wrap:nowrap;padding:0 12px;gap:8px}.logo-brand{height:68px;width:112px}.logo-brand img{width:112px;height:auto;top:6px}.logo-brand::before{height:108px;left:-10px;right:-10px}.top-actions{gap:4px}.langs button{font-size:15px;padding:4px}.order-top{display:none}body.menu-open nav{top:68px}}
+/* Header finishing */
+.topbar{background:linear-gradient(180deg,#123341 0%,#0f2a36 100%);box-shadow:0 1px 0 rgba(212,232,58,.18),0 8px 24px -10px rgba(0,0,0,.55)}
+.logo-brand::before{background:linear-gradient(180deg,#123341 0%,#0f2a36 60%);box-shadow:0 10px 22px -8px rgba(0,0,0,.6),inset 0 -1px 0 rgba(212,232,58,.22)}
+.logo-brand img{filter:drop-shadow(0 2px 6px rgba(0,0,0,.45));transition:transform .3s ease}.logo-brand:hover img{transform:scale(1.03)}
+.langs button{position:relative;letter-spacing:.5px;transition:color .2s}.langs button:hover{color:var(--chartreuse)}
+.langs button.active::after{content:'';position:absolute;left:25%;right:25%;bottom:2px;height:2px;border-radius:2px;background:var(--chartreuse)}
+.order-top{border-radius:10px;font-weight:800;box-shadow:0 4px 14px -4px rgba(212,232,58,.55);transition:transform .2s,box-shadow .2s}.order-top:hover{transform:translateY(-1px);box-shadow:0 6px 18px -4px rgba(212,232,58,.7)}
+.cart-btn{transition:color .2s}.cart-btn:hover{color:var(--chartreuse)}
+.burger span{background:#fff}.burger:hover span{background:var(--chartreuse)}
+@media(max-width:1000px){.logo-brand{position:absolute;left:50%;transform:translateX(-50%);top:0}.topbar{justify-content:space-between}}
