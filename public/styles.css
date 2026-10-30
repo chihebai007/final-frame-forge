@@ -103,3 +103,9 @@ body.menu-open .topbar nav{opacity:1;visibility:visible;pointer-events:auto;top:
 .topbar .logo-brand{position:static;transform:none;height:100%}
 .topbar .logo-brand img{height:84px;max-width:130px}
 @media(max-width:650px){.topbar{height:84px;min-height:84px}.topbar .logo-brand img{height:68px;max-width:100px}}
+/* header uses site palette */
+.topbar{background:var(--navy)}
+.topbar nav,body.menu-open .topbar nav{background:color-mix(in srgb,var(--navy) 96%,transparent)}
+.topbar .order-top{background:var(--gold);color:var(--navy)}
+.topbar #cartCount{background:var(--gold);color:var(--navy)}
+.topbar .langs button.active{color:var(--gold)}
