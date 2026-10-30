@@ -51,6 +51,8 @@ html[dir=rtl] .story-text{direction:rtl}
 .trust small{font-size:13px;line-height:1.5;color:var(--muted)}
 @media(min-width:651px) and (max-width:1000px){.trust>div:nth-child(3){border:0}.trust{row-gap:26px}}
 @media(max-width:650px){.trust{row-gap:26px;padding-block:32px}.trust>div{padding:8px 12px}.trust>div:nth-child(2n){border:0}.trust>div:last-child{grid-column:1/-1}.trust-icon{width:56px;height:56px}.trust-icon svg{width:28px;height:28px}.trust strong{font-size:15px}}
+/* Merged Terroir section: the badges live inside the shop band now. */
+.shop .trust{background:transparent;padding-block:0 46px}
 
 /* Saved photos are the only source; never show a preset while loading. */
 .hero-bottle:has(img[hidden]){display:none}
