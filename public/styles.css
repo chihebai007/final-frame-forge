@@ -109,3 +109,4 @@ body.menu-open .topbar nav{opacity:1;visibility:visible;pointer-events:auto;top:
 .topbar .order-top{background:var(--gold);color:var(--navy)}
 .topbar #cartCount{background:var(--gold);color:var(--navy)}
 .topbar .langs button.active{color:var(--gold)}
+.topbar a.btn.order-top,.topbar a.btn.gold.order-top{background:var(--gold)!important;color:var(--navy)!important}
