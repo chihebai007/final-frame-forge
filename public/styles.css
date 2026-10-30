@@ -80,3 +80,20 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:80px}
 @media(min-width:1001px){.burger{display:none}}
 @media(max-width:1000px){.topbar{gap:16px}.logo-brand{width:124px}.logo-brand img{width:124px;height:auto}.logo-brand::before{height:120px;left:-12px;right:-12px}body.menu-open nav{top:84px}}
 @media(max-width:650px){.topbar{height:68px;min-height:68px;flex-wrap:nowrap;padding:0 12px;gap:8px}.logo-brand{height:68px;width:112px}.logo-brand img{width:112px;height:auto;top:6px}.logo-brand::before{height:108px;left:-10px;right:-10px}.top-actions{gap:4px}.langs button{font-size:15px;padding:4px}.order-top{display:none}body.menu-open nav{top:68px}}
+/* MITINAN header component */
+.topbar{position:sticky;top:0;z-index:50;height:145px;min-height:145px;background:#0F2A36;padding:0 48px;gap:16px;flex-wrap:nowrap;justify-content:space-between;box-shadow:none}
+.topbar .burger{display:flex;flex-direction:column;justify-content:center;gap:8px;width:42px;height:42px;padding:0;flex-shrink:0;position:relative;z-index:60}
+.topbar .burger span{height:4px;width:36px;background:#fff;border-radius:999px;transition:all .3s}
+body.menu-open .burger span:nth-child(1){transform:translateY(12px) rotate(45deg)}
+body.menu-open .burger span:nth-child(2){opacity:0}
+body.menu-open .burger span:nth-child(3){transform:translateY(-12px) rotate(-45deg)}
+.topbar .logo-brand{position:absolute;left:50%;top:0;transform:translateX(-50%);height:100%;width:auto;display:flex;align-items:center;justify-content:center;align-self:auto}
+.topbar .logo-brand::before{display:none}
+.topbar .logo-brand img{position:static;height:125px;width:auto;max-width:180px;object-fit:contain;filter:none}
+.topbar nav,body.menu-open .topbar nav{display:flex;position:fixed;inset:0;z-index:40;flex-direction:column;align-items:center;justify-content:center;gap:32px;background:rgba(15,42,54,.95);padding:0;max-height:none;box-shadow:none;font-size:20px;opacity:0;visibility:hidden;pointer-events:none;transition:all .3s}
+body.menu-open .topbar nav{opacity:1;visibility:visible;pointer-events:auto;top:0}
+.topbar nav a,body.menu-open .topbar nav a{color:#fff;padding:0;border:0;font-size:20px}
+.topbar .top-actions{margin-inline-start:auto;position:relative;z-index:60}
+@media(max-width:1000px){.topbar .order-top{display:none}}
+@media(max-width:650px){.topbar{padding:0 24px;height:145px;min-height:145px}.topbar .logo-brand img{max-width:140px;height:110px}.topbar .langs button{font-size:13px;padding:2px;min-width:28px}.topbar .top-actions{gap:0}}
+@media(max-width:420px){.topbar{padding:0 14px}.topbar .logo-brand img{max-width:110px;height:auto}}
