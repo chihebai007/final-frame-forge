@@ -90,3 +90,4 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:80px}
 .cart-btn{transition:color .2s}.cart-btn:hover{color:var(--chartreuse)}
 .burger span{background:#fff}.burger:hover span{background:var(--chartreuse)}
 @media(max-width:1000px){.logo-brand{position:absolute;left:50%;transform:translateX(-50%);top:0}.topbar{justify-content:space-between}}
+@media(max-width:650px){.logo-brand{position:relative;left:auto;transform:none}.topbar{justify-content:flex-start}}
