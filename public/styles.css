@@ -110,5 +110,5 @@ body.menu-open .topbar nav{opacity:1;visibility:visible;pointer-events:auto;top:
 .topbar #cartCount{background:var(--gold);color:var(--navy)}
 .topbar .langs button.active{color:var(--gold)}
 .topbar a.btn.order-top,.topbar a.btn.gold.order-top{background:var(--gold)!important;color:var(--navy)!important}
-.topbar{height:84px;min-height:84px}.topbar .logo-brand img{height:72px}
-@media(max-width:650px){.topbar{height:68px;min-height:68px}.topbar .logo-brand img{height:58px}body.menu-open nav{top:0}}
+.topbar{height:56px;min-height:56px}.topbar .logo-brand img{height:46px}
+@media(max-width:650px){.topbar{height:48px;min-height:48px}.topbar .logo-brand img{height:38px}body.menu-open nav{top:0}}
