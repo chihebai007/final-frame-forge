@@ -42,15 +42,15 @@ html{scroll-padding-top:80px}img{max-width:100%}input[type=tel]{direction:ltr;te
 html[dir=rtl] .story-text{direction:rtl}
 /* Terroir: unified line icons in the MITINAN palette. */
 :root{--trust-icon-surface:color-mix(in oklab,var(--chartreuse) 12%,var(--white));--trust-icon-border:color-mix(in oklab,var(--chartreuse) 42%,var(--white));--trust-divider:color-mix(in oklab,var(--navy) 12%,var(--white))}
-.trust{background:var(--white);padding-block:44px;align-items:stretch}
-.trust>div{min-width:0;justify-items:center;align-content:start;gap:10px;padding:12px 18px;border:0;border-inline-end:1px solid var(--trust-divider)}
+.trust{background:color-mix(in oklab,var(--navy) 4%,var(--white));padding-block:44px;align-items:stretch;gap:12px}
+.trust>div{min-width:0;justify-items:center;align-content:start;gap:10px;padding:20px 14px;border:0;background:var(--white);border-radius:12px;box-shadow:0 1px 2px color-mix(in oklab,var(--navy) 8%,transparent),0 6px 18px color-mix(in oklab,var(--navy) 5%,transparent)}
 .trust>div:last-child{border:0}
 .trust-icon{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--trust-icon-surface);border:1px solid var(--trust-icon-border);color:var(--navy);margin-bottom:6px}
 .trust-icon svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .trust strong{font-size:16px;line-height:1.4;color:var(--navy)}
 .trust small{font-size:13px;line-height:1.5;color:var(--muted)}
-@media(min-width:651px) and (max-width:1000px){.trust>div:nth-child(3){border:0}.trust{row-gap:26px}}
-@media(max-width:650px){.trust{row-gap:26px;padding-block:32px}.trust>div{padding:8px 12px}.trust>div:nth-child(2n){border:0}.trust>div:last-child{grid-column:1/-1}.trust-icon{width:56px;height:56px}.trust-icon svg{width:28px;height:28px}.trust strong{font-size:15px}}
+@media(min-width:651px) and (max-width:1000px){.trust{row-gap:14px}}
+@media(max-width:650px){.trust{row-gap:12px;padding-block:32px}.trust>div{padding:14px 10px}.trust>div:last-child{grid-column:1/-1}.trust-icon{width:56px;height:56px}.trust-icon svg{width:28px;height:28px}.trust strong{font-size:15px}}
 /* One "Le Terroir" tab: the white badge band on top, the shop band below. */
 .terroir-band .trust{padding-inline:7vw}
 @media(max-width:650px){.terroir-band .trust{padding-inline:18px}}
