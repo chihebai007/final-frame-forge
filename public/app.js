@@ -47,11 +47,11 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
   // Traductions (FR = textes modifiables depuis l'administration)
   const I18N = {
     en: {
-      nav_home:"Home",nav_story:"Our story",nav_terroir:"Terroir",nav_products:"Our products",nav_shop:"Shop",nav_awards:"Awards",nav_articles:"News",nav_contact:"Contact",
+      nav_home:"Home",nav_story:"Our story",nav_terroir:"The terroir",nav_products:"Our products",nav_awards:"Awards",nav_articles:"News",nav_contact:"Contact",
       order_btn:"Order",order_now:"Order now →",b1:"100% Natural",b1s:"Cold extraction",b2:"From the heart",b2s:"of Kabylia",b3:"Authentic product",b3s:"of Algeria",
       see_range:"See the full range →",olive_oil:"Olive oil",discover:"Discover →",more:"Learn more →",
       t1:"100% Natural",t1s:"No additives",t2:"Cold extraction",t2s:"Preserves the oil's qualities",t3:"Kabylia origin",t3s:"Exceptional terroir",t4:"Quality",t4s:"MITINAN standard",t5:"Product of Algeria",t5s:"Pride of the land",
-      shop_eyebrow:"MITINAN SHOP",all:"All",loading:"Loading…",awards_eyebrow:"PRIZES & AWARDS",awards_title:"Our medals and trophies",awards_text:"MITINAN oil quality recognised at competitions and fairs.",
+      shop_eyebrow:"MITINAN TERROIR",all:"All",loading:"Loading…",awards_eyebrow:"PRIZES & AWARDS",awards_title:"Our medals and trophies",awards_text:"MITINAN oil quality recognised at competitions and fairs.",
       contact_us:"Contact us →",journal:"MITINAN JOURNAL",sales:"Sales department",consumer:"Customer service",send:"Send",links:"Links",languages:"Languages",admin:"Administration",
       your_cart:"Your cart",total:"Total",checkout:"Checkout",checkout_title:"Order — cash on delivery",summary:"Order summary",dest_dz:"Algeria",dest_int:"International (on quote)",
       choose_wilaya:"Choose your wilaya",choose_commune:"Choose your town",choose_commune_first:"Choose the wilaya first",other_commune:"Other (type it)",confirm:"Confirm order",pay_note:"Cash on delivery — no online payment required.",pay_note_int:"International: we will contact you with a shipping quote before confirming.",
@@ -66,11 +66,11 @@ import { readOffers, priceLine, changeCartOffer } from './pack-pricing.js';
       max_stock:"Maximum stock reached for this product.",thanks_order:"Thank you! Your order #{n} has been recorded. We will call you to confirm delivery.",thanks_int:"Thank you! Your request #{n} has been recorded. We will contact you with a quote.",thanks_msg:"Thank you! Your message has been sent.",thanks_review:"Thank you! Your review will appear after validation.",err:"An error occurred, please try again.",net:"Connection failed, please try again.",
     },
     ar: {
-      nav_home:"الرئيسية",nav_story:"قصتنا",nav_terroir:"الأرض",nav_products:"منتجاتنا",nav_shop:"المتجر",nav_awards:"الجوائز",nav_articles:"المقالات",nav_contact:"اتصل بنا",
+      nav_home:"الرئيسية",nav_story:"قصتنا",nav_terroir:"الأرض",nav_products:"منتجاتنا",nav_awards:"الجوائز",nav_articles:"المقالات",nav_contact:"اتصل بنا",
       order_btn:"اطلب",order_now:"اطلب الآن ←",b1:"طبيعي 100%",b1s:"عصر على البارد",b2:"من قلب",b2s:"منطقة القبائل",b3:"منتج أصيل",b3s:"من الجزائر",
       see_range:"شاهد كل المنتجات ←",olive_oil:"زيت زيتون",discover:"اكتشف ←",more:"اعرف المزيد ←",
       t1:"طبيعي 100%",t1s:"بدون إضافات",t2:"عصر على البارد",t2s:"يحافظ على جودة الزيت",t3:"أصل القبائل",t3s:"أرض استثنائية",t4:"الجودة",t4s:"معايير ميتينان",t5:"منتج جزائري",t5s:"فخر الأرض",
-      shop_eyebrow:"متجر ميتينان",all:"الكل",loading:"جار التحميل…",awards_eyebrow:"الجوائز والتكريمات",awards_title:"ميدالياتنا وكؤوسنا",awards_text:"جودة زيت ميتينان معترف بها في المسابقات والمعارض.",
+      shop_eyebrow:"أرض ميتينان",all:"الكل",loading:"جار التحميل…",awards_eyebrow:"الجوائز والتكريمات",awards_title:"ميدالياتنا وكؤوسنا",awards_text:"جودة زيت ميتينان معترف بها في المسابقات والمعارض.",
       contact_us:"اتصل بنا ←",journal:"مجلة ميتينان",sales:"المصلحة التجارية",consumer:"خدمة المستهلك",send:"إرسال",links:"روابط",languages:"اللغات",admin:"الإدارة",
       your_cart:"سلتك",total:"المجموع",checkout:"إتمام الطلب",checkout_title:"الطلب — الدفع عند الاستلام",summary:"ملخص الطلب",dest_dz:"الجزائر",dest_int:"دولي (حسب عرض سعر)",
       choose_wilaya:"اختر ولايتك",choose_commune:"اختر بلديتك",choose_commune_first:"اختر الولاية أولاً",other_commune:"أخرى (اكتبها)",confirm:"تأكيد الطلب",pay_note:"الدفع عند الاستلام — لا يلزم أي دفع عبر الإنترنت.",pay_note_int:"دولي: سنتصل بك بعرض سعر الشحن قبل التأكيد.",
