@@ -83,10 +83,10 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:80px}
 /* MITINAN header component */
 .topbar{position:sticky;top:0;z-index:50;height:145px;min-height:145px;background:#0F2A36;padding:0 48px;gap:16px;flex-wrap:nowrap;justify-content:space-between;box-shadow:none}
 .topbar .burger{display:flex;flex-direction:column;justify-content:center;gap:8px;width:42px;height:42px;padding:0;flex-shrink:0;position:relative;z-index:60}
-.topbar .burger span{height:4px;width:36px;background:#fff;border-radius:999px;transition:all .3s}
-body.menu-open .burger span:nth-child(1){transform:translateY(12px) rotate(45deg)}
+.topbar .burger span{height:2px;width:30px;background:#fff;border-radius:999px;transition:all .3s}
+body.menu-open .burger span:nth-child(1){transform:translateY(10px) rotate(45deg)}
 body.menu-open .burger span:nth-child(2){opacity:0}
-body.menu-open .burger span:nth-child(3){transform:translateY(-12px) rotate(-45deg)}
+body.menu-open .burger span:nth-child(3){transform:translateY(-10px) rotate(-45deg)}
 .topbar .logo-brand{position:absolute;left:50%;top:0;transform:translateX(-50%);height:100%;width:auto;display:flex;align-items:center;justify-content:center;align-self:auto}
 .topbar .logo-brand::before{display:none}
 .topbar .logo-brand img{position:static;height:125px;width:auto;max-width:180px;object-fit:contain;filter:none}
